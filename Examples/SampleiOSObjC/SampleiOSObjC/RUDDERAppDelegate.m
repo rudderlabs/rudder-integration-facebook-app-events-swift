@@ -18,6 +18,11 @@
 {
     // Override point for customization after application launch.
     
+    [[FBSDKApplicationDelegate sharedInstance] application:application
+                             didFinishLaunchingWithOptions:launchOptions];
+    [[FBSDKSettings sharedSettings] setAdvertiserTrackingEnabled:YES];
+    [[FBSDKSettings sharedSettings] setAutoLogAppEventsEnabled:YES];
+
     RSConfig *config = [[RSConfig alloc] initWithWriteKey:@"1wvsoF3Kx2SczQNlx1dvcqW9ODW"];
     [config dataPlaneURL:@"https://rudderstacz.dataplane.rudderstack.com"];
     [config loglevel:RSLogLevelDebug];
@@ -34,10 +39,6 @@
     [client addWithDestination:[[RudderFacebookAppEventsDestination alloc] init]];
     [client track:@"Track 1" properties:NULL option:NULL];
 
-//    [[FBSDKApplicationDelegate sharedInstance] application:application
-//                             didFinishLaunchingWithOptions:launchOptions];
-//    [[FBSDKSettings sharedSettings] setAdvertiserTrackingEnabled:YES];
-//    [[FBSDKSettings sharedSettings] setAutoLogAppEventsEnabled:YES];
 //
 //    [FBSDKAppEvents logEvent:@"test_events"];
     
