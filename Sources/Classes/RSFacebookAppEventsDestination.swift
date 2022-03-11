@@ -80,6 +80,11 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         client?.log(message: "MessageType is not supported", logLevel: .warning)
         return message
     }
+    
+    func reset() {
+        AppEvents.shared.clearUserData()
+        AppEvents.shared.userID = nil
+    }
 }
 
 extension RSFacebookAppEventsDestination: RSiOSLifecycle {
