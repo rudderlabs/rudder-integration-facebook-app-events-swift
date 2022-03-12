@@ -2,10 +2,13 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:RudderFacebookAppEvents.xcodeproj">
+      location = "group:Examples/SampleAppObjC/SampleAppObjC.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Examples/SampleiOSObjC/SampleiOSObjC.xcodeproj">
+      location = "group:Examples/SampleAppSwift/SampleAppSwift.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:RudderFacebookAppEvents.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
