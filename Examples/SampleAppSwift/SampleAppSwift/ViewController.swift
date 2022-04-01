@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Rudder
 
 class ViewController: UIViewController {
 

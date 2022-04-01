@@ -8,7 +8,8 @@
 #import "AppDelegate.h"
 
 @import RudderStack;
-@import RudderBugsnag;
+@import FBSDKCoreKit;
+@import RudderFacebookAppEvents;
 
 @interface AppDelegate ()
 
@@ -19,16 +20,24 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+    [[FBSDKSettings sharedSettings] setAdvertiserTrackingEnabled:YES];
+    [[FBSDKSettings sharedSettings] setAdvertiserIDCollectionEnabled:YES];
+    [[FBSDKSettings sharedSettings] setAutoLogAppEventsEnabled:YES];
+    
+//    [[FBSDKAppEvents shared] logEvent:@"Track 1"];
+    
     RSConfig *config = [[RSConfig alloc] initWithWriteKey:@"1wvsoF3Kx2SczQNlx1dvcqW9ODW"];
     [config dataPlaneURL:@"https://rudderstacz.dataplane.rudderstack.com"];
-    [config loglevel:RSLogLevelDebug];
+    [config loglevel:RSLogLevelVerbose];
     [config trackLifecycleEvents:YES];
     [config recordScreenViews:YES];
     
-    RSClient *client = [[RSClient alloc] initWithConfig:config];
+    self.client = [[RSClient alloc] initWithConfig:config];
     
-    [client addWithDestination:[[RudderBugsnagDestination alloc] init]];
-    [client track:@"Track 1" properties:NULL option:NULL];
+    [self.client addDestination:[[RudderFacebookAppEventsDestination alloc] init]];
+    [self.client track:@"Track 1"];
     return YES;
 }
 

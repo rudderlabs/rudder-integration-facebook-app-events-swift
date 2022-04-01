@@ -7,10 +7,10 @@ Pod::Spec.new do |s|
     Rudder is a platform for collecting, storing and routing customer event data to dozens of tools. Rudder is open-source, can run in your cloud environment (AWS, GCP, Azure or even your data-centre) and provides a powerful transformation framework to process your event data on the fly.
     DESC
 
-    s.homepage         = 'https://github.com/rudderlabs/rudder-integration-facebook-ios'
+    s.homepage         = 'https://github.com/rudderlabs/rudder-integration-facebook-app-events-swift'
     s.license          = { :type => "Apache", :file => "LICENSE" }
     s.author           = { 'RudderStack' => 'arnab@rudderlabs.com' }
-    s.source           = { :git => 'https://github.com/rudderlabs/rudder-facebook-app-events-ios.git', :tag => 'v#{s.version}' }
+    s.source           = { :git => 'https://github.com/rudderlabs/rudder-integration-facebook-app-events-swift.git', :tag => 'v#{s.version}' }
     
     s.ios.deployment_target = '12.0'
     s.tvos.deployment_target = '11.0'
@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
     s.module_name = 'RudderFacebookAppEvents'
     s.swift_version = '5.3'
 
-    s.dependency 'RudderStack', '~> 1.0'
+    s.dependency 'RudderStack'
     s.dependency 'FBSDKCoreKit', '13.0.0'
 end

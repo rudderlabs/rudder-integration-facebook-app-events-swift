@@ -1,10 +1,11 @@
+source 'https://github.com/CocoaPods/Specs.git'
 workspace 'RudderFacebookAppEvents.xcworkspace'
 use_frameworks!
 inhibit_all_warnings!
 platform :ios, '12.0'
 
 def shared_pods
-    pod 'RudderStack', :path => '~/Documents/Rudder/RudderStack-Cocoa/'
+    pod 'RudderStack', :path => '~/Documents/Rudder/RudderStack-Swift/'
 end
 
 target 'RudderFacebookAppEvents' do

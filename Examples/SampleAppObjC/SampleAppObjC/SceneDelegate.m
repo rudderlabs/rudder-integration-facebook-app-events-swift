@@ -7,6 +7,8 @@
 
 #import "SceneDelegate.h"
 
+@import FBSDKCoreKit;
+
 @interface SceneDelegate ()
 
 @end

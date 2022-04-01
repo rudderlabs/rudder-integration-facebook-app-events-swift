@@ -8,7 +8,7 @@
 
 import UIKit
 import RudderStack
-import RudderBugsnag
+import RudderFacebookAppEvents
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         client = RSClient(config: config)
 
-        client?.add(destination: RudderBugsnagDestination())
+        client?.addDestination(RudderFacebookAppEventsDestination())
         client?.track("Track 1")
         
         return true

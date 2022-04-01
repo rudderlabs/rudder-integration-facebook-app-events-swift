@@ -43,7 +43,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
     
     func identify(message: IdentifyMessage) -> IdentifyMessage? {
         AppEvents.shared.userID = message.userId
-        AppEvents.shared.setUser(email: message.traits?["email"], firstName: message.traits?["firstName"], lastName: message.traits?["lastName"], phone: message.traits?["phone"], dateOfBirth: message.traits?["birthday"], gender: message.traits?["gender"], city: message.traits?["city"], state: message.traits?["state"], zip: message.traits?["postalcode"], country: message.traits?["country"])
+        AppEvents.shared.setUser(email: message.traits?["email"] as? String, firstName: message.traits?["firstName"] as? String, lastName: message.traits?["lastName"] as? String, phone: message.traits?["phone"] as? String, dateOfBirth: message.traits?["birthday"] as? String, gender: message.traits?["gender"] as? String, city: message.traits?["city"] as? String, state: message.traits?["state"] as? String, zip: message.traits?["postalcode"] as? String, country: message.traits?["country"] as? String)
         return message
     }
     
