@@ -8,7 +8,7 @@
 #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
 
 import Foundation
-import RudderStack
+import Rudder
 import FBSDKCoreKit
 
 class RSFacebookAppEventsDestination: RSDestinationPlugin {
@@ -19,26 +19,27 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         
     func update(serverConfig: RSServerConfig, type: UpdateType) {
         guard type == .initial else { return }
-        if let destinations = serverConfig.destinations {
-            if let destination = destinations.first(where: { $0.destinationDefinition?.displayName == self.key }) {
-                let limitedDataUse = destination.config?.dictionaryValue?["limitedDataUse"] as? Bool
-                var dpoState = destination.config?.dictionaryValue?["dpoState"] as? Int
-                if dpoState != 0, dpoState != 1000 {
-                    dpoState = 0
-                }
-                var dpoCountry = destination.config?.dictionaryValue?["dpoCountry"] as? Int
-                if dpoCountry != 0, dpoCountry != 1 {
-                    dpoCountry = 0
-                }
-                if limitedDataUse == true, let country = dpoCountry, let state = dpoState {
-                    Settings.shared.setDataProcessingOptions(["LDU"], country: Int32(country), state: Int32(state))
-                    client?.log(message: "[FBSDKSettings setDataProcessingOptions:[LDU] country:\(country) state:\(state)]", logLevel: .debug)
-                } else {
-                    Settings.shared.setDataProcessingOptions([])
-                    client?.log(message: "[FBSDKSettings setDataProcessingOptions:[]]", logLevel: .debug)
-                }
-            }
+        guard let facebookAppEventsConfig: RudderFacebookAppEventsConfig = serverConfig.getConfig(forPlugin: self) else {
+            client?.log(message: "Failed to Initialize Facebook App Events Factory", logLevel: .warning)
+            return
         }
+        var dpoState = facebookAppEventsConfig.dpoState
+        if facebookAppEventsConfig.dpoState != 0, facebookAppEventsConfig.dpoState != 1000 {
+            dpoState = 0
+        }
+        var dpoCountry = facebookAppEventsConfig.dpoCountry
+        if dpoCountry != 0, dpoCountry != 1 {
+            dpoCountry = 0
+        }
+        let limitedDataUse = facebookAppEventsConfig.limitedDataUse
+        if limitedDataUse == true {
+            Settings.shared.setDataProcessingOptions(["LDU"], country: Int32(dpoCountry), state: Int32(dpoState))
+            client?.log(message: "[FBSDKSettings setDataProcessingOptions:[LDU] country:\(dpoCountry) state:\(dpoState)]", logLevel: .debug)
+        } else {
+            Settings.shared.setDataProcessingOptions([])
+            client?.log(message: "[FBSDKSettings setDataProcessingOptions:[]]", logLevel: .debug)
+        }
+        client?.log(message: "Initializing Facebook App Events SDK", logLevel: .debug)
     }
     
     func identify(message: IdentifyMessage) -> IdentifyMessage? {
@@ -147,17 +148,40 @@ extension RSFacebookAppEventsDestination {
     
     static func getFacebookAppEvent(from rudderEvent: String) -> AppEvents.ParameterName {
         switch rudderEvent {
-        case RSECommerceConstants.KeyCurrency: return AppEvents.ParameterName.currency
-        case RSECommerceConstants.KeyOrderId: return AppEvents.ParameterName.orderID
-        case RSECommerceConstants.KeyQuery: return AppEvents.ParameterName.searchString
-        case RSECommerceConstants.KeyWishlistId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyListId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyCheckoutId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyCouponId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyCartId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyReviewId: return AppEvents.ParameterName.contentID
+        case RSKeys.Ecommerce.currency: return AppEvents.ParameterName.currency
+        case RSKeys.Ecommerce.orderId: return AppEvents.ParameterName.orderID
+        case RSKeys.Ecommerce.query: return AppEvents.ParameterName.searchString
+        case RSKeys.Ecommerce.wishlistId: return AppEvents.ParameterName.contentID
+        case RSKeys.Ecommerce.listId: return AppEvents.ParameterName.contentID
+        case RSKeys.Ecommerce.checkoutId: return AppEvents.ParameterName.contentID
+        case RSKeys.Ecommerce.couponId: return AppEvents.ParameterName.contentID
+        case RSKeys.Ecommerce.cartId: return AppEvents.ParameterName.contentID
+        case RSKeys.Ecommerce.reviewId: return AppEvents.ParameterName.contentID
         default: return AppEvents.ParameterName(rudderEvent)
         }
+    }
+}
+
+struct RudderFacebookAppEventsConfig: Codable {
+    private let _dpoState: Int?
+    var dpoState: Int {
+        return _dpoState ?? 0
+    }
+    
+    private let _dpoCountry: Int?
+    var dpoCountry: Int {
+        return _dpoCountry ?? 0
+    }
+    
+    private let _limitedDataUse: Bool?
+    var limitedDataUse: Bool {
+        return _limitedDataUse ?? false
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case _dpoState = "dpoState"
+        case _dpoCountry = "dpoCountry"
+        case _limitedDataUse = "limitedDataUse"
     }
 }
 

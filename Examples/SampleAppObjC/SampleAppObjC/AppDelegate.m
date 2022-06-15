@@ -7,7 +7,7 @@
 
 #import "AppDelegate.h"
 
-@import RudderStack;
+@import Rudder;
 @import FBSDKCoreKit;
 @import RudderFacebookAppEvents;
 
@@ -26,18 +26,16 @@
     [[FBSDKSettings sharedSettings] setAdvertiserIDCollectionEnabled:YES];
     [[FBSDKSettings sharedSettings] setAutoLogAppEventsEnabled:YES];
     
-//    [[FBSDKAppEvents shared] logEvent:@"Track 1"];
-    
     RSConfig *config = [[RSConfig alloc] initWithWriteKey:@"1wvsoF3Kx2SczQNlx1dvcqW9ODW"];
     [config dataPlaneURL:@"https://rudderstacz.dataplane.rudderstack.com"];
     [config loglevel:RSLogLevelVerbose];
     [config trackLifecycleEvents:YES];
     [config recordScreenViews:YES];
     
-    self.client = [[RSClient alloc] initWithConfig:config];
+    [[RSClient sharedInstance] configureWith:config];
+    [[RSClient sharedInstance] addDestination:[[RudderFacebookAppEventsDestination alloc] init]];
     
-    [self.client addDestination:[[RudderFacebookAppEventsDestination alloc] init]];
-    [self.client track:@"Track 1"];
+    [[RSClient sharedInstance] track:@"Track 1"];
     return YES;
 }
 

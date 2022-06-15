@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import RudderStack
+import Rudder
 import RudderFacebookAppEvents
 
 @UIApplicationMain
@@ -24,11 +24,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .trackLifecycleEvents(true)
             .recordScreenViews(true)
         
-        client = RSClient(config: config)
-
-        client?.addDestination(RudderFacebookAppEventsDestination())
-        client?.track("Track 1")
-        
+        RSClient.sharedInstance().configure(with: config)
+        RSClient.sharedInstance().addDestination(RudderFacebookAppEventsDestination())
         return true
     }
 
