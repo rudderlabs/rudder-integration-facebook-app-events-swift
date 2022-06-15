@@ -43,18 +43,31 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
     }
     
     func identify(message: IdentifyMessage) -> IdentifyMessage? {
-        AppEvents.shared.userID = message.userId
-        AppEvents.shared.setUser(email: message.traits?["email"] as? String, firstName: message.traits?["firstName"] as? String, lastName: message.traits?["lastName"] as? String, phone: message.traits?["phone"] as? String, dateOfBirth: message.traits?["birthday"] as? String, gender: message.traits?["gender"] as? String, city: message.traits?["city"] as? String, state: message.traits?["state"] as? String, zip: message.traits?["postalcode"] as? String, country: message.traits?["country"] as? String)
+        if let userId = message.userId {
+            AppEvents.shared.userID = message.userId
+        }
+        AppEvents.shared.setUser(
+            email: message.traits?[RSKeys.Identify.Traits.email] as? String,
+            firstName: message.traits?[RSKeys.Identify.Traits.firstName] as? String,
+            lastName: message.traits?[RSKeys.Identify.Traits.lastName] as? String,
+            phone: message.traits?[RSKeys.Identify.Traits.phone] as? String,
+            dateOfBirth: message.traits?[RSKeys.Identify.Traits.birthday] as? String,
+            gender: message.traits?[RSKeys.Identify.Traits.gender] as? String,
+            city: message.traits?[RSKeys.Identify.Traits.Address.city] as? String,
+            state: message.traits?["state"] as? String,
+            zip: message.traits?["postalcode"] as? String,
+            country: message.traits?[RSKeys.Identify.Traits.Address.country] as? String
+        )
         return message
     }
     
     func track(message: TrackMessage) -> TrackMessage? {
         let index = message.event.index(message.event.startIndex, offsetBy: min(40, message.event.count))
         let truncatedEvent = String(message.event[..<index])
-        if let revenue = RSFacebookAppEventsDestination.extractRevenue(from: message.properties, revenueKey: "revenue") {
-            let currency = RSFacebookAppEventsDestination.extractCurrency(from: message.properties, withKey: "currency")
+        if let revenue = RSFacebookAppEventsDestination.extractRevenue(from: message.properties, revenueKey: RSKeys.Ecommerce.revenue) {
+            let currency = RSFacebookAppEventsDestination.extractCurrency(from: message.properties, withKey: RSKeys.Ecommerce.currency)
             var properties = message.properties
-            properties?["currency"] = currency
+            properties?[RSKeys.Ecommerce.currency] = currency
             AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: RSFacebookAppEventsDestination.extractParams(properties: properties))
             AppEvents.shared.logEvent(AppEvents.Name(truncatedEvent), valueToSum: revenue, parameters: RSFacebookAppEventsDestination.extractParams(properties: properties))
         } else {
@@ -132,7 +145,7 @@ extension RSFacebookAppEventsDestination {
             params = [AppEvents.ParameterName: Any]()
             for (key, value) in properties {
                 switch value {
-                case let v as NSString:
+                case let v as String:
                     params?[getFacebookAppEvent(from: key)] = v
                 case let v as NSNumber:
                     params?[getFacebookAppEvent(from: key)] = v
