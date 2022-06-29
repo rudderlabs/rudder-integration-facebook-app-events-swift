@@ -58,5 +58,22 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>fb1571364999932393</string>
+      </array>
+      </dict>
+    </array>
+    <key>FacebookAppID</key>
+    <string>1571364999932393</string>
+    <key>FacebookClientToken</key>
+    <string>4e21e31992e29a36462e8589df75f0d6</string>
+    <key>FacebookDisplayName</key>
+    <string>22 june 2</string>
+    <key>NSUserTrackingUsageDescription</key>
+    <string>Select allow to send event to Facebook App Events</string>
 </dict>
 </plist>

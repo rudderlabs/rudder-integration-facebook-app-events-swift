@@ -5,7 +5,7 @@ inhibit_all_warnings!
 platform :ios, '12.0'
 
 def shared_pods
-    pod 'Rudder', '2.0.1'
+    pod 'Rudder', '~> 2.0.1'
 end
 
 target 'RudderFacebookAppEvents' do

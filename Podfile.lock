@@ -8,11 +8,11 @@ PODS:
   - Rudder (2.0.1)
   - RudderFacebookAppEvents (1.0.0):
     - FBSDKCoreKit (= 13.0.0)
-    - Rudder (= 2.0.1)
+    - Rudder (~> 2.0.1)
 
 DEPENDENCIES:
   - FBSDKCoreKit (= 13.0.0)
-  - Rudder (= 2.0.1)
+  - Rudder (~> 2.0.1)
   - RudderFacebookAppEvents (from `.`)
 
 SPEC REPOS:
@@ -31,8 +31,8 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: 00e1e751257e1005304fa29cb683d2dfe008f41a
   FBSDKCoreKit_Basics: 96ec2ddb67a032e54f0754ea3d59db6f84f42389
   Rudder: 463af33116984b97f2a19d344e9ad491f164e43e
-  RudderFacebookAppEvents: 9aa6f51f841a0fa0128120dff053be00fce2cc29
+  RudderFacebookAppEvents: b0d12743ce4e006de755b2bce1ef37474b0776c2
 
-PODFILE CHECKSUM: 33c5622d70707c9e391671173bc098f96d327031
+PODFILE CHECKSUM: 0ccdf204815b52c5b9d44954ae129f32ff0df3a2
 
 COCOAPODS: 1.11.3
