@@ -16,7 +16,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
     let key = "Facebook App Events"
     var client: RSClient?
     var controller = RSController()
-        
+    
     func update(serverConfig: RSServerConfig, type: UpdateType) {
         guard type == .initial else { return }
         guard let facebookAppEventsConfig: RudderFacebookAppEventsConfig = serverConfig.getConfig(forPlugin: self) else {
@@ -61,67 +61,39 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         return message
     }
     
-    /*
-     Ad Type:     FBSDKAppEventParameterNameAdType
-     Content: FBSDKAppEventParameterNameContent
-     Content ID:     FBSDKAppEventParameterNameContentID (String)
-     Content Type:     FBSDKAppEventParameterNameContentType
-     Currency:     FBSDKAppEventParameterNameCurrency (String: ISO 4217 code, for example, EUR, USD, JPY)
-     Description: FBSDKAppEventParameterNameDescription
-     Level:     FBSDKAppEventParameterNameLevel
-     Max. Rating Value:     FBSDKAppEventParameterNameMaxRatingValue (INT)
-     Number of Items:     FBSDKAppEventParameterNameNumItems (INT)
-     Order ID:     FBSDKAppEventParameterNameOrderID (String)
-     Payment Info Available:     FBSDKAppEventParameterNamePaymentInfoAvailable (Boolean)
-     Registration Method:     FBSDKAppEventParameterNameRegistrationMethod (String)
-     Search String:     FBSDKAppEventParameterNameSearchString (String)
-     Success:     FBSDKAppEventParameterNameSuccess (Boolean)
-     
-     */
-    
     func track(message: TrackMessage) -> TrackMessage? {
-//        AppEvents.shared.logEvent(AppEvents.Name.searched)
-        
-//        let ev: String = "myTestEvent3"
-//        let eventName: AppEvents.Name = AppEvents.Name(rawValue: ev)
-//        AppEvents.shared.logEvent(eventName)
-        
-        
         let index = message.event.index(message.event.startIndex, offsetBy: min(40, message.event.count))
         let truncatedEvent = String(message.event[..<index])
         var params = [AppEvents.ParameterName: Any]()
-        switch getFacebookEvent(from: truncatedEvent) {
-//        case AppEvents.Name.searched:   // RSEvents.Ecommerce.productsSearched:
-//            if let properties = message.properties {
-//                params[AppEvents.ParameterName.contentType] = properties["contentType"]
-////                params[AppEvents.ParameterName(rawValue: "abc")] = "asl"
-//                params[AppEvents.ParameterName.searchString] = properties["query"]
-//                AppEvents.shared.logEvent(AppEvents.Name.searched, parameters: params)
-//            }
-//        case AppEvents.Name.viewedContent: //RSEvents.Ecommerce.productViewed:
-        case AppEvents.Name.addedToCart: //RSEvents.Ecommerce.productAdded:
-        case AppEvents.Name.addedToWishlist: //RSEvents.Ecommerce.productAddedToWishList:
-        case AppEvents.Name.addedPaymentInfo: //RSEvents.Ecommerce.paymentInfoEntered:
-        case AppEvents.Name.initiatedCheckout: //RSEvents.Ecommerce.checkoutStarted:
-        case AppEvents.Name.purchased: //RSEvents.Ecommerce.orderCompleted:
-        case AppEvents.Name.completedRegistration: //RSEvents.LifeCycle.completeRegistration:
-        case AppEvents.Name.achievedLevel: //RSEvents.LifeCycle.achieveLevel:
-        case AppEvents.Name.completedTutorial: //RSEvents.LifeCycle.completeTutorial:
-        case AppEvents.Name.unlockedAchievement: //RSEvents.LifeCycle.unlockAchievement:
-        case AppEvents.Name.adClick: //RSEvents.Ecommerce.promotionClicked:
-        case AppEvents.Name.spentCredits: //RSEvents.Ecommerce.spendCredits:
+        handleCustom(properties: message.properties, params: &params)
+        let eventName = getFacebookEvent(from: truncatedEvent)
+        switch eventName {
+        case AppEvents.Name.addedToCart, AppEvents.Name.addedToWishlist, AppEvents.Name.viewedContent:
+            // TODO: Handle price
+            if let properties = message.properties, let price = properties[RSKeys.Ecommerce.price] as? Double {
+                handleStandard(properties: properties, params: &params, eventName: eventName)
+                AppEvents.shared.logEvent(eventName, valueToSum: price, parameters: params)
+            }
+        case AppEvents.Name.initiatedCheckout, AppEvents.Name.spentCredits:
+            // TODO: Handle value
+            if let properties = message.properties, let value = properties[RSKeys.Ecommerce.value] as? Double {
+                handleStandard(properties: properties, params: &params, eventName: eventName)
+                AppEvents.shared.logEvent(eventName, valueToSum: value, parameters: params)
+            }
+        case AppEvents.Name.purchased:
+            // TODO: Handle total
+            if let properties = message.properties, let revenue = properties[RSKeys.Ecommerce.revenue] as? Double, let currency = properties[RSKeys.Ecommerce.currency] as? String {
+                handleStandard(properties: properties, params: &params, eventName: eventName)
+                AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: params)
+            }
+        case AppEvents.Name.searched, AppEvents.Name.addedPaymentInfo, AppEvents.Name.completedRegistration, AppEvents.Name.achievedLevel, AppEvents.Name.completedTutorial, AppEvents.Name.unlockedAchievement, AppEvents.Name.subscribe, AppEvents.Name.startTrial, AppEvents.Name.adClick, AppEvents.Name.adImpression, AppEvents.Name.rated:
+            // TODO: Handle standard event
+            AppEvents.shared.logEvent(eventName, parameters: params)
         default:
+            // TODO: Handle custom events
+            AppEvents.shared.logEvent(eventName, parameters: params)
             break
         }
-//        if let revenue = RSFacebookAppEventsDestination.extractRevenue(from: message.properties, revenueKey: RSKeys.Ecommerce.revenue) {
-//            let currency = RSFacebookAppEventsDestination.extractCurrency(from: message.properties, withKey: RSKeys.Ecommerce.currency)
-//            var properties = message.properties
-//            properties?[RSKeys.Ecommerce.currency] = currency
-//            AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: RSFacebookAppEventsDestination.extractParams(properties: properties))
-//            AppEvents.shared.logEvent(AppEvents.Name(truncatedEvent), valueToSum: revenue, parameters: RSFacebookAppEventsDestination.extractParams(properties: properties))
-//        } else {
-//            AppEvents.shared.logEvent(AppEvents.Name(truncatedEvent), parameters: RSFacebookAppEventsDestination.extractParams(properties: message.properties))
-//        }
         return message
     }
     
@@ -130,17 +102,9 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         // 'Viewed' and 'Screen' with spaces take up 14
         let index = message.name.index(message.name.startIndex, offsetBy: min(26, message.name.count))
         let truncatedEvent = String(message.name[..<index])
-        AppEvents.shared.logEvent(AppEvents.Name(rawValue: "Viewed \(truncatedEvent) Screen"), parameters: RSFacebookAppEventsDestination.extractParams(properties: message.properties))
-        return message
-    }
-    
-    func group(message: GroupMessage) -> GroupMessage? {
-        client?.log(message: "MessageType is not supported", logLevel: .warning)
-        return message
-    }
-    
-    func alias(message: AliasMessage) -> AliasMessage? {
-        client?.log(message: "MessageType is not supported", logLevel: .warning)
+        var params = [AppEvents.ParameterName: Any]()
+        handleCustom(properties: message.properties, params: &params)
+        AppEvents.shared.logEvent(AppEvents.Name(rawValue: "Viewed \(truncatedEvent) Screen"), parameters: params)
         return message
     }
     
@@ -159,132 +123,75 @@ extension RSFacebookAppEventsDestination: RSiOSLifecycle {
 // MARK: - Support methods
 
 extension RSFacebookAppEventsDestination {
-    /*
-     "Products Searched": "fb_mobile_search", ->  // Search
-       "Product Viewed": "fb_mobile_content_view",  // Content View
-       "Product Added": "fb_mobile_add_to_cart", // Add to Cart
-       "Product Added to Wishlist": "fb_mobile_add_to_wishlist", // Add to Wishlist
-       "Payment Info Entered": "fb_mobile_add_payment_info", // Add Payment Info
-       "Checkout Started": "fb_mobile_initiated_checkout", // Initiate Checkout
-       "Order Completed": "fb_mobile_purchase" // Purchase
-     
-     Standard Events:
-     Add Payment Info, Add to Cart, Add to WishList, Complete Registration, Content View, Initiated Checkout, Level Achieved, Purchase, Spent Credits, Tutorial Completion, Achievement Unlocked, Search
-     Rate, Subscribe, Start Trial
-     
-     Achieve Level, Activate App, In-App Ad Click, In-App Ad Impression, Add Payment Info, Add to Cart, Add to Wishlist, Complete Registration, Complete Tutorial, Contact, Customize Product, Donate, Find Location, Initiate Checkout, logPurchase, Rate, Schedule, Search, Spent Credits, Start Trial, Submit Application, Subscribe, Subscription, Unlock Achievement, View Content
-     
-     
-     These events are not implemented: Subscription, Submit Application,  Schedule, Find Location, Donate, Customize Product, Contact,
-     */
+    var TRACK_RESERVED_KEYWORDS: [String] {
+        return [RSKeys.Ecommerce.productId, RSKeys.Ecommerce.rating, "name", RSKeys.Ecommerce.orderId, RSKeys.Ecommerce.currency, "description", RSKeys.Ecommerce.query]
+    }
     
     func getFacebookEvent(from event: String) -> AppEvents.Name {
         switch event {
-//        case RSEvents.Ecommerce.productsSearched:
-//            return AppEvents.Name.searched
-//        case RSEvents.Ecommerce.productViewed:
-//            return AppEvents.Name.viewedContent
-//        case RSEvents.Ecommerce.productAdded:
-//            return AppEvents.Name.addedToCart
-//        case RSEvents.Ecommerce.productAddedToWishList:
-//            return AppEvents.Name.addedToWishlist
-//        case RSEvents.Ecommerce.paymentInfoEntered:
-//            return AppEvents.Name.addedPaymentInfo
-//        case RSEvents.Ecommerce.checkoutStarted:
-//            return AppEvents.Name.initiatedCheckout
-//        case RSEvents.Ecommerce.orderCompleted:
-//            return AppEvents.Name.purchased
-            
-//        case RSEvents.LifeCycle.completeRegistration:
-//            return AppEvents.Name.completedRegistration
-//        case RSEvents.LifeCycle.achieveLevel:
-//            return AppEvents.Name.achievedLevel
-//        case RSEvents.LifeCycle.completeTutorial:
-//            return AppEvents.Name.completedTutorial
-//        case RSEvents.LifeCycle.unlockAchievement:
-//            return AppEvents.Name.unlockedAchievement
-//        case "subscribe":
-//            return AppEvents.Name.subscribe
-//        case "start trial":
-//            return AppEvents.Name.startTrial
-            
-        case RSEvents.Ecommerce.promotionClicked:
-            return AppEvents.Name.adClick
-            // TODO: Checn if below mapping is correct or not
-        case RSEvents.Ecommerce.promotionViewed:
-            return AppEvents.Name.adImpression
-        case RSEvents.Ecommerce.spendCredits:
-            return AppEvents.Name.spentCredits
-        case RSEvents.Ecommerce.productReviewed:
-            return AppEvents.Name.rated
+        case RSEvents.Ecommerce.productsSearched: return AppEvents.Name.searched
+        case RSEvents.Ecommerce.productViewed: return AppEvents.Name.viewedContent
+        case RSEvents.Ecommerce.productAdded: return AppEvents.Name.addedToCart
+        case RSEvents.Ecommerce.productAddedToWishList: return AppEvents.Name.addedToWishlist
+        case RSEvents.Ecommerce.paymentInfoEntered: return AppEvents.Name.addedPaymentInfo
+        case RSEvents.Ecommerce.checkoutStarted: return AppEvents.Name.initiatedCheckout
+        case RSEvents.Ecommerce.orderCompleted: return AppEvents.Name.purchased
+        case RSEvents.LifeCycle.completeRegistration: return AppEvents.Name.completedRegistration
+        case RSEvents.LifeCycle.achieveLevel: return AppEvents.Name.achievedLevel
+        case RSEvents.LifeCycle.completeTutorial: return AppEvents.Name.completedTutorial
+        case RSEvents.LifeCycle.unlockAchievement: return AppEvents.Name.unlockedAchievement
+        case "subscribe": return AppEvents.Name.subscribe
+        case "start trial": return AppEvents.Name.startTrial
+        case RSEvents.Ecommerce.promotionClicked: return AppEvents.Name.adClick
+            // TODO: Check if below mapping is correct or not
+        case RSEvents.Ecommerce.promotionViewed: return AppEvents.Name.adImpression
+        case RSEvents.Ecommerce.spendCredits: return AppEvents.Name.spentCredits
+        case RSEvents.Ecommerce.productReviewed: return AppEvents.Name.rated
+        default: return AppEvents.Name(rawValue: event)
+        }
+    }
+    
+    func handleStandard(properties properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any], eventName: AppEvents.Name){
+        guard let properties = properties else {
+            return
+        }
         
-            
-        default:
-            return AppEvents.Name(rawValue: event)
+        if let productId = properties[RSKeys.Ecommerce.productId]{
+            params[AppEvents.ParameterName.contentID] = "\(productId)"
         }
-    }
-    
-    static func extractRevenue(from properties: [String: Any]?, revenueKey: String) -> Double? {
-        if let properties = properties {
-            for key in properties.keys {
-                if key.caseInsensitiveCompare(revenueKey) == .orderedSame {
-                    if let revenue = properties[key] {
-                        return Double("\(revenue)")
-                    }
-                    break
-                }
+        if let rating = properties[RSKeys.Ecommerce.rating] as? Int{
+            params[AppEvents.ParameterName.maxRatingValue] = rating
+        }
+        if let name = properties["name"] {   // TODO: Add promotion event -> properties: `name` in the RSKeys
+            params[AppEvents.ParameterName.adType] = "\(name)"
+        }
+        if let orderId = properties[RSKeys.Ecommerce.orderId] {
+            params[AppEvents.ParameterName.orderID] = "\(orderId)"
+        }
+        /// For `Purchase` event we're directly handling the `currency` properties
+        if eventName != AppEvents.Name.purchased {
+            if let currency = properties[RSKeys.Ecommerce.currency] {
+                params[AppEvents.ParameterName.adType] = "\(currency)"
             }
         }
-        return nil
-    }
-    
-    static func extractCurrency(from properties: [String: Any]?, withKey currencyKey: String) -> String {
-        if let properties = properties {
-            for key in properties.keys {
-                if key.caseInsensitiveCompare(currencyKey) == .orderedSame {
-                    if let currency = properties[key] {
-                        return "\(currency)"
-                    }
-                    break
-                }
-            }
+        if let description = properties["description"] {
+            params[AppEvents.ParameterName.description] = "\(description)"
         }
-        // default to USD
-        return "USD"
-    }
-    
-    static func extractParams(properties: [String: Any]?) -> [AppEvents.ParameterName: Any]? {
-        var params: [AppEvents.ParameterName: Any]?
-        if let properties = properties {
-            params = [AppEvents.ParameterName: Any]()
-            for (key, value) in properties {
-                switch value {
-                case let v as String:
-                    params?[getFacebookAppEvent(from: key)] = v
-                case let v as NSNumber:
-                    params?[getFacebookAppEvent(from: key)] = v
-                case let v as Bool:
-                    params?[getFacebookAppEvent(from: key)] = v
-                default:
-                    break
-                }
-            }
+        if let query = properties[RSKeys.Ecommerce.query] {
+            params[AppEvents.ParameterName.searchString] = "\(query)"
         }
-        return params
     }
     
-    static func getFacebookAppEvent(from rudderEvent: String) -> AppEvents.ParameterName {
-        switch rudderEvent {
-        case RSKeys.Ecommerce.currency: return AppEvents.ParameterName.currency
-        case RSKeys.Ecommerce.orderId: return AppEvents.ParameterName.orderID
-        case RSKeys.Ecommerce.query: return AppEvents.ParameterName.searchString
-        case RSKeys.Ecommerce.wishlistId: return AppEvents.ParameterName.contentID
-        case RSKeys.Ecommerce.listId: return AppEvents.ParameterName.contentID
-        case RSKeys.Ecommerce.checkoutId: return AppEvents.ParameterName.contentID
-        case RSKeys.Ecommerce.couponId: return AppEvents.ParameterName.contentID
-        case RSKeys.Ecommerce.cartId: return AppEvents.ParameterName.contentID
-        case RSKeys.Ecommerce.reviewId: return AppEvents.ParameterName.contentID
-        default: return AppEvents.ParameterName(rudderEvent)
+    func handleCustom(properties properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any]){
+        guard let properties = properties else {
+            return
+        }
+        
+        for (key, value) in properties {
+            if TRACK_RESERVED_KEYWORDS.contains(key) {
+                continue
+            }
+            params[AppEvents.ParameterName(rawValue: key)] = "\(value)"
         }
     }
 }
