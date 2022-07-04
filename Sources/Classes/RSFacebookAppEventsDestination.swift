@@ -39,7 +39,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
             Settings.shared.setDataProcessingOptions([])
             client?.log(message: "[FBSDKSettings setDataProcessingOptions:[]]", logLevel: .debug)
         }
-        if client?.configuration?.logLevel == .debug || client?.configuration?.logLevel == .verbose {
+        if client?.configuration?.logLevel == RSLogLevel.debug || client?.configuration?.logLevel == RSLogLevel.verbose {
             Settings.shared.enableLoggingBehavior(.appEvents)
         }
         client?.log(message: "Initializing Facebook App Events SDK", logLevel: .debug)
@@ -210,14 +210,14 @@ extension RSFacebookAppEventsDestination {
 }
 
 struct RudderFacebookAppEventsConfig: Codable {
-    private let _dpoState: Int?
+    private let _dpoState: String?
     var dpoState: Int {
-        return _dpoState ?? 0
+        return (_dpoState as? Int) ?? 0
     }
     
-    private let _dpoCountry: Int?
+    private let _dpoCountry: String?
     var dpoCountry: Int {
-        return _dpoCountry ?? 0
+        return (_dpoCountry as? Int) ?? 0
     }
     
     private let _limitedDataUse: Bool?
