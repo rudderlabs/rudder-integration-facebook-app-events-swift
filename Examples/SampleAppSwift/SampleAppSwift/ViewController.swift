@@ -14,16 +14,29 @@ import Rudder
 
 
 class ViewController: UIViewController, UIApplicationDelegate {
-
+    let properties: [String: Any] = [
+        RSKeys.Ecommerce.productId: "a123",
+        RSKeys.Ecommerce.rating: 123,
+        "name": "adName",   // RSKeys.Ecommerce.promotionName
+        RSKeys.Ecommerce.currency: "INR",
+        RSKeys.Ecommerce.orderId: "12o3of",
+        "description": "description",   // RSKeys.Other.description
+        RSKeys.Ecommerce.query: "query",
+        
+        RSKeys.Ecommerce.value: 120.87,
+        RSKeys.Ecommerce.price: 230,
+        RSKeys.Ecommerce.revenue: 34,
+        
+        "key-1": "value-1",
+        "key-2": 123
+    ]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-//        RSClient.sharedInstance().track(RSEvents.Ecommerce.productAdded, properties: properties)
     }
     
-    
-    @IBAction func track(_ sender: Any) {
-        
+    @IBAction func Identify(_ sender: Any) {
         RSClient.sharedInstance().identify("random_user", traits: [
             RSKeys.Identify.Traits.email: "test@example.com",
             RSKeys.Identify.Traits.firstName: "firstName",
@@ -36,32 +49,41 @@ class ViewController: UIViewController, UIApplicationDelegate {
             "postalcode": "postalCode",
             RSKeys.Identify.Traits.Address.country: "Country"
         ])
-        
-        
-        let properties: [String: Any] = [
-            RSKeys.Ecommerce.productId: "a123",
-            RSKeys.Ecommerce.rating: 123,
-            "name": "adName",
-
-            RSKeys.Ecommerce.value: 120.87,
-            RSKeys.Ecommerce.price: 230,
-            RSKeys.Ecommerce.revenue: 34,
-
-            RSKeys.Ecommerce.orderId: "12o3of",
-            RSKeys.Ecommerce.currency: "INR",
-            "description": "description",
-            RSKeys.Ecommerce.query: "query",
-            "key-1": "value-1",
-            "key-2": 123
-        ]
-        RSClient.sharedInstance().track(RSEvents.Ecommerce.productAdded, properties: properties)
-        RSClient.sharedInstance().track(RSEvents.Ecommerce.productAddedToWishList, properties: properties)
-//        RSClient.sharedInstance().track(RSEvents.Ecommerce.checkoutStarted, properties: properties)
-        
-//        RSClient.sharedInstance().track(RSEvents.Ecommerce.productsSearched, properties: [
-//            "contentType": "cnka",
-//            "abc": "123"
-//        ])
     }
+    
+    @IBAction func standardTraack(_ sender: Any) {
+        let eventList: [String] = [
+            RSEvents.Ecommerce.productAdded, RSEvents.Ecommerce.productAddedToWishList, RSEvents.Ecommerce.productViewed,
+            RSEvents.Ecommerce.checkoutStarted, RSEvents.Ecommerce.spendCredits,
+            RSEvents.Ecommerce.orderCompleted,
+            RSEvents.Ecommerce.productsSearched, RSEvents.Ecommerce.paymentInfoEntered, RSEvents.LifeCycle.completeRegistration, RSEvents.LifeCycle.achieveLevel, RSEvents.LifeCycle.completeTutorial, RSEvents.LifeCycle.unlockAchievement,
+//            RSEvents.LifeCycle.subscribe, RSEvents.LifeCycle.startTrial,
+            RSEvents.Ecommerce.promotionClicked, RSEvents.Ecommerce.promotionViewed, RSEvents.Ecommerce.productReviewed
+        ]
+        
+        for event in eventList {
+            RSClient.sharedInstance().track(event, properties: properties)
+        }
+    }
+    
+    @IBAction func customTrack(_ sender: Any) {
+        RSClient.sharedInstance().track("Empty track events")
+        RSClient.sharedInstance().track("Track events with properties", properties: [
+            "key-1": "value-1",
+            "key-2": 45,
+            "key-3": 34.56,
+            "key-4": true
+        ])
+    }
+    
+    @IBAction func screen(_ sender: Any) {
+        RSClient.sharedInstance().track("Screen with props", properties: [
+            "key-1": "value-1",
+            "key-2": 45,
+            "key-3": 34.56,
+            "key-4": true
+        ])
+    }
+    
 }
 

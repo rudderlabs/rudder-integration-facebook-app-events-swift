@@ -18,12 +18,46 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="77u-2C-F75">
-                                <rect key="frame" x="147" y="211" width="162" height="201"/>
+                                <rect key="frame" x="47" y="278" width="311" height="160"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="placeholderTextColor"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="TRACK"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Standard track"/>
                                 <connections>
-                                    <action selector="track:" destination="BYZ-38-t0r" eventType="touchUpInside" id="LhZ-Zt-8wz"/>
+                                    <action selector="Identify:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uwe-1D-KA6"/>
+                                    <action selector="standardTraack:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XP1-zu-ESI"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rQW-SE-73q">
+                                <rect key="frame" x="41" y="107" width="317" height="119"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="quaternaryLabelColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Identify"/>
+                                <connections>
+                                    <action selector="Identify:" destination="BYZ-38-t0r" eventType="touchUpInside" id="nMC-rO-d3E"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rTO-0k-OH1">
+                                <rect key="frame" x="41" y="684" width="317" height="124"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="placeholderTextColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Screen"/>
+                                <connections>
+                                    <action selector="Identify:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Vc8-jw-wjc"/>
+                                    <action selector="screen:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dfp-7r-6Mo"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9bU-XW-W4w">
+                                <rect key="frame" x="41" y="492" width="318" height="124"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="placeholderTextColor"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Custom Track"/>
+                                <connections>
+                                    <action selector="Identify:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9lq-og-2EQ"/>
+                                    <action selector="customTrack:" destination="BYZ-38-t0r" eventType="touchUpInside" id="QEe-7P-B9S"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -37,6 +71,12 @@
         </scene>
     </scenes>
     <resources>
+        <systemColor name="placeholderTextColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="quaternaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.17999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
