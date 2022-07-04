@@ -22,6 +22,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        
+//        let price = 65;
+//        let p = Double("\(price)")
+//        if let q = Double("\(price)") {
+//            let r = q
+//            print (q)
+//        }
         NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(applicationDidBecomeActive(_:)),

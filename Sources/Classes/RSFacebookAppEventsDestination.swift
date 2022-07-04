@@ -69,18 +69,18 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         let eventName = getFacebookEvent(from: truncatedEvent)
         switch eventName {
         case AppEvents.Name.addedToCart, AppEvents.Name.addedToWishlist, AppEvents.Name.viewedContent:
-            if let properties = message.properties, let price = properties[RSKeys.Ecommerce.price] as? Double {
-                handleStandard(properties: properties, params: &params, eventName: eventName)
+            handleStandard(properties: message.properties, params: &params, eventName: eventName)
+            if let properties = message.properties, let price = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.price)  {
                 AppEvents.shared.logEvent(eventName, valueToSum: price, parameters: params)
             }
         case AppEvents.Name.initiatedCheckout, AppEvents.Name.spentCredits:
-            if let properties = message.properties, let value = properties[RSKeys.Ecommerce.value] as? Double {
-                handleStandard(properties: properties, params: &params, eventName: eventName)
+            handleStandard(properties: message.properties, params: &params, eventName: eventName)
+            if let properties = message.properties, let value = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.value) {
                 AppEvents.shared.logEvent(eventName, valueToSum: value, parameters: params)
             }
         case AppEvents.Name.purchased:
-            if let properties = message.properties, let revenue = properties[RSKeys.Ecommerce.revenue] as? Double, let currency = properties[RSKeys.Ecommerce.currency] as? String {
-                handleStandard(properties: properties, params: &params, eventName: eventName)
+            handleStandard(properties: message.properties, params: &params, eventName: eventName)
+            if let properties = message.properties, let revenue = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.revenue), let currency = properties[RSKeys.Ecommerce.currency] as? String {
                 AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: params)
             }
         case AppEvents.Name.searched, AppEvents.Name.addedPaymentInfo, AppEvents.Name.completedRegistration, AppEvents.Name.achievedLevel, AppEvents.Name.completedTutorial, AppEvents.Name.unlockedAchievement, AppEvents.Name.subscribe, AppEvents.Name.startTrial, AppEvents.Name.adClick, AppEvents.Name.adImpression, AppEvents.Name.rated:
@@ -121,7 +121,7 @@ extension RSFacebookAppEventsDestination: RSiOSLifecycle {
 
 extension RSFacebookAppEventsDestination {
     var TRACK_RESERVED_KEYWORDS: [String] {
-        return [RSKeys.Ecommerce.productId, RSKeys.Ecommerce.rating, "name", RSKeys.Ecommerce.orderId, RSKeys.Ecommerce.currency, "description", RSKeys.Ecommerce.query]
+        return [RSKeys.Ecommerce.productId, RSKeys.Ecommerce.rating, "name", RSKeys.Ecommerce.orderId, RSKeys.Ecommerce.currency, "description", RSKeys.Ecommerce.query, RSKeys.Ecommerce.value, RSKeys.Ecommerce.price, RSKeys.Ecommerce.revenue]
     }
     
     func getFacebookEvent(from event: String) -> AppEvents.Name {
@@ -140,7 +140,6 @@ extension RSFacebookAppEventsDestination {
         case "subscribe": return AppEvents.Name.subscribe
         case "start trial": return AppEvents.Name.startTrial
         case RSEvents.Ecommerce.promotionClicked: return AppEvents.Name.adClick
-            // TODO: Check if below mapping is correct or not
         case RSEvents.Ecommerce.promotionViewed: return AppEvents.Name.adImpression
         case RSEvents.Ecommerce.spendCredits: return AppEvents.Name.spentCredits
         case RSEvents.Ecommerce.productReviewed: return AppEvents.Name.rated
@@ -153,10 +152,10 @@ extension RSFacebookAppEventsDestination {
             return
         }
         
-        if let productId = properties[RSKeys.Ecommerce.productId]{
+        if let productId = properties[RSKeys.Ecommerce.productId] {
             params[AppEvents.ParameterName.contentID] = "\(productId)"
         }
-        if let rating = properties[RSKeys.Ecommerce.rating] as? Int{
+        if let rating = properties[RSKeys.Ecommerce.rating] as? Int {
             params[AppEvents.ParameterName.maxRatingValue] = rating
         }
         if let name = properties["name"] {   // TODO: Add promotion event -> properties: `name` in the RSKeys
@@ -168,7 +167,7 @@ extension RSFacebookAppEventsDestination {
         /// For `Purchase` event we're directly handling the `currency` properties
         if eventName != AppEvents.Name.purchased {
             if let currency = properties[RSKeys.Ecommerce.currency] {
-                params[AppEvents.ParameterName.adType] = "\(currency)"
+                params[AppEvents.ParameterName.currency] = "\(currency)"
             }
         }
         if let description = properties["description"] {
@@ -190,6 +189,20 @@ extension RSFacebookAppEventsDestination {
             }
             params[AppEvents.ParameterName(rawValue: key)] = "\(value)"
         }
+    }
+    
+    static func extractValutToSum(from properties: [String: Any]?, valueToSumKey: String) -> Double? {
+        if let properties = properties {
+            for key in properties.keys {
+                if key.caseInsensitiveCompare(valueToSumKey) == .orderedSame {
+                    if let valueToSum = properties[key] {
+                        return Double("\(valueToSum)")
+                    }
+                    break
+                }
+            }
+        }
+        return nil
     }
 }
 
