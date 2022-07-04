@@ -22,24 +22,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        
-//        let price = 65;
-//        let p = Double("\(price)")
-//        if let q = Double("\(price)") {
-//            let r = q
-//            print (q)
-//        }
+        // Request user for Tracking Authorization
         NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(applicationDidBecomeActive(_:)),
                 name: UIApplication.didBecomeActiveNotification,
                 object: nil)
         
-//        requestPermission()
-        ApplicationDelegate.shared.application(
-           application,
-           didFinishLaunchingWithOptions: launchOptions
-       )
+        ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
         
         let config: RSConfig = RSConfig(writeKey: "1wvsoF3Kx2SczQNlx1dvcqW9ODW")
             .dataPlaneURL("https://rudderstacz.dataplane.rudderstack.com")
@@ -50,23 +40,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         RSClient.sharedInstance().configure(with: config)
         RSClient.sharedInstance().addDestination(RudderFacebookAppEventsDestination())
         
-//        FBSDKLoggingBehaviorAppEvents
-//        Settings.shared.loggingBehaviors([.appEvents,])
+        // Enable FB log manually
 //        Settings.shared.enableLoggingBehavior(.appEvents)
-        
-//        Settings.shared.enableLoggingBehavior(.appEvents)
-//        Settings.shared.enableLoggingBehavior(.appEvents)
-//        Settings.shared.enableLoggingBehavior(.networkRequests)
-//        Settings.shared.enableLoggingBehavior(.developerErrors)
-//        Settings.shared.enableLoggingBehavior(.graphAPIDebugInfo)
-//        Settings.shared.enableLoggingBehavior(.accessTokens)
-        Settings.shared.isAutoLogAppEventsEnabled = true
-        Settings.shared.isAdvertiserIDCollectionEnabled = true
-        
-//        Settings.shared.loggingBehaviors = Set<AnyHashable>([FBSDKLoggingBehaviorAppEvents, FBSDKLoggingBehaviorGraphAPIDebugInfo, FBSDKLoggingBehaviorCacheErrors, FBSDKLoggingBehaviorAccessTokens, FBSDKLoggingBehaviorDeveloperErrors, FBSDKLoggingBehaviorNetworkRequests, FBSDKLoggingBehaviorGraphAPIDebugWarning, FBSDKLoggingBehaviorInformational, FBSDKLoggingBehaviorUIControlErrors, FBSDKLoggingBehaviorPerformanceCharacteristics])
-        
-        
-        Settings.shared.loggingBehaviors = ([LoggingBehavior.appEvents, .developerErrors])
         return true
     }
     
@@ -75,18 +50,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             ATTrackingManager.requestTrackingAuthorization { status in
                 switch status {
                 case .authorized:
+                    /// `Get Device Consent`: Starting with iOS 14.5, you will need to set `isAdvertiserTrackingEnabled` and log each time you give a device permission to share data with Facebook. Refer Facebook App Event doc here: https://developers.facebook.com/docs/app-events/getting-started-app-events-ios
                     Settings.shared.isAdvertiserTrackingEnabled = true
-                    // Tracking authorization dialog was shown
-                    // and we are authorized
                     print("Authorized")
-                    // Now that we are authorized we can get the IDFA
-                    print(ASIdentifierManager.shared().advertisingIdentifier)
                 case .denied:
-                    // Tracking authorization dialog was
-                    // shown and permission is denied
                     print("Denied")
                 case .notDetermined:
-                    // Tracking authorization dialog has not been shown
                     print("Not Determined")
                 case .restricted:
                     print("Restricted")

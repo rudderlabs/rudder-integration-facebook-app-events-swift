@@ -40,7 +40,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
             client?.log(message: "[FBSDKSettings setDataProcessingOptions:[]]", logLevel: .debug)
         }
         if client?.configuration?.logLevel == .debug || client?.configuration?.logLevel == .verbose {
-            Settings.shared.loggingBehaviors = ([LoggingBehavior.appEvents, .developerErrors])
+            Settings.shared.enableLoggingBehavior(.appEvents)
         }
         client?.log(message: "Initializing Facebook App Events SDK", logLevel: .debug)
     }
