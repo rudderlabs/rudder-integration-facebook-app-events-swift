@@ -54,8 +54,8 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
             dateOfBirth: message.traits?[RSKeys.Identify.Traits.birthday] as? String,
             gender: message.traits?[RSKeys.Identify.Traits.gender] as? String,
             city: message.traits?[RSKeys.Identify.Traits.Address.city] as? String,
-            state: message.traits?["state"] as? String,
-            zip: message.traits?["postalcode"] as? String,
+            state: message.traits?[RSKeys.Identify.Traits.Address.state] as? String,
+            zip: message.traits?[RSKeys.Identify.Traits.Address.postalcode] as? String,
             country: message.traits?[RSKeys.Identify.Traits.Address.country] as? String
         )
         return message
@@ -121,7 +121,7 @@ extension RSFacebookAppEventsDestination: RSiOSLifecycle {
 
 extension RSFacebookAppEventsDestination {
     var TRACK_RESERVED_KEYWORDS: [String] {
-        return [RSKeys.Ecommerce.productId, RSKeys.Ecommerce.rating, "name", RSKeys.Ecommerce.orderId, RSKeys.Ecommerce.currency, "description", RSKeys.Ecommerce.query, RSKeys.Ecommerce.value, RSKeys.Ecommerce.price, RSKeys.Ecommerce.revenue]
+        return [RSKeys.Ecommerce.productId, RSKeys.Ecommerce.rating, RSKeys.Ecommerce.promotionName, RSKeys.Ecommerce.orderId, RSKeys.Ecommerce.currency, RSKeys.Other.description, RSKeys.Ecommerce.query, RSKeys.Ecommerce.value, RSKeys.Ecommerce.price, RSKeys.Ecommerce.revenue]
     }
     
     func getFacebookEvent(from event: String) -> AppEvents.Name {
@@ -137,8 +137,8 @@ extension RSFacebookAppEventsDestination {
         case RSEvents.LifeCycle.achieveLevel: return AppEvents.Name.achievedLevel
         case RSEvents.LifeCycle.completeTutorial: return AppEvents.Name.completedTutorial
         case RSEvents.LifeCycle.unlockAchievement: return AppEvents.Name.unlockedAchievement
-        case "subscribe": return AppEvents.Name.subscribe
-        case "start trial": return AppEvents.Name.startTrial
+        case RSEvents.LifeCycle.subscribe: return AppEvents.Name.subscribe
+        case RSEvents.LifeCycle.startTrial: return AppEvents.Name.startTrial
         case RSEvents.Ecommerce.promotionClicked: return AppEvents.Name.adClick
         case RSEvents.Ecommerce.promotionViewed: return AppEvents.Name.adImpression
         case RSEvents.Ecommerce.spendCredits: return AppEvents.Name.spentCredits
@@ -158,7 +158,7 @@ extension RSFacebookAppEventsDestination {
         if let rating = properties[RSKeys.Ecommerce.rating] as? Int {
             params[AppEvents.ParameterName.maxRatingValue] = rating
         }
-        if let name = properties["name"] {   // TODO: Add promotion event -> properties: `name` in the RSKeys
+        if let name = properties[RSKeys.Ecommerce.promotionName] {
             params[AppEvents.ParameterName.adType] = "\(name)"
         }
         if let orderId = properties[RSKeys.Ecommerce.orderId] {
@@ -170,7 +170,7 @@ extension RSFacebookAppEventsDestination {
                 params[AppEvents.ParameterName.currency] = "\(currency)"
             }
         }
-        if let description = properties["description"] {
+        if let description = properties[RSKeys.Other.description] {
             params[AppEvents.ParameterName.description] = "\(description)"
         }
         if let query = properties[RSKeys.Ecommerce.query] {
