@@ -69,28 +69,25 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         let eventName = getFacebookEvent(from: truncatedEvent)
         switch eventName {
         case AppEvents.Name.addedToCart, AppEvents.Name.addedToWishlist, AppEvents.Name.viewedContent:
-            // TODO: Handle price
             if let properties = message.properties, let price = properties[RSKeys.Ecommerce.price] as? Double {
                 handleStandard(properties: properties, params: &params, eventName: eventName)
                 AppEvents.shared.logEvent(eventName, valueToSum: price, parameters: params)
             }
         case AppEvents.Name.initiatedCheckout, AppEvents.Name.spentCredits:
-            // TODO: Handle value
             if let properties = message.properties, let value = properties[RSKeys.Ecommerce.value] as? Double {
                 handleStandard(properties: properties, params: &params, eventName: eventName)
                 AppEvents.shared.logEvent(eventName, valueToSum: value, parameters: params)
             }
         case AppEvents.Name.purchased:
-            // TODO: Handle total
             if let properties = message.properties, let revenue = properties[RSKeys.Ecommerce.revenue] as? Double, let currency = properties[RSKeys.Ecommerce.currency] as? String {
                 handleStandard(properties: properties, params: &params, eventName: eventName)
                 AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: params)
             }
         case AppEvents.Name.searched, AppEvents.Name.addedPaymentInfo, AppEvents.Name.completedRegistration, AppEvents.Name.achievedLevel, AppEvents.Name.completedTutorial, AppEvents.Name.unlockedAchievement, AppEvents.Name.subscribe, AppEvents.Name.startTrial, AppEvents.Name.adClick, AppEvents.Name.adImpression, AppEvents.Name.rated:
-            // TODO: Handle standard event
+            handleStandard(properties: message.properties, params: &params, eventName: eventName)
             AppEvents.shared.logEvent(eventName, parameters: params)
+            // Custom events
         default:
-            // TODO: Handle custom events
             AppEvents.shared.logEvent(eventName, parameters: params)
             break
         }
