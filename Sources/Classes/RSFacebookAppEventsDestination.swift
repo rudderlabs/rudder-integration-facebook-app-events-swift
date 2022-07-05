@@ -68,26 +68,26 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         let index = message.event.index(message.event.startIndex, offsetBy: min(40, message.event.count))
         let truncatedEvent = String(message.event[..<index])
         var params = [AppEvents.ParameterName: Any]()
-        handleCustom(properties: message.properties, params: &params)
+        handleCustom(message.properties, params: &params)
         let eventName = getFacebookEvent(from: truncatedEvent)
         switch eventName {
         case AppEvents.Name.addedToCart, AppEvents.Name.addedToWishlist, AppEvents.Name.viewedContent:
-            handleStandard(properties: message.properties, params: &params, eventName: eventName)
+            handleStandard(message.properties, params: &params, eventName: eventName)
             if let properties = message.properties, let price = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.price)  {
                 AppEvents.shared.logEvent(eventName, valueToSum: price, parameters: params)
             }
         case AppEvents.Name.initiatedCheckout, AppEvents.Name.spentCredits:
-            handleStandard(properties: message.properties, params: &params, eventName: eventName)
+            handleStandard(message.properties, params: &params, eventName: eventName)
             if let properties = message.properties, let value = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.value) {
                 AppEvents.shared.logEvent(eventName, valueToSum: value, parameters: params)
             }
         case AppEvents.Name.purchased:
-            handleStandard(properties: message.properties, params: &params, eventName: eventName)
+            handleStandard(message.properties, params: &params, eventName: eventName)
             if let properties = message.properties, let revenue = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.revenue), let currency = properties[RSKeys.Ecommerce.currency] as? String {
                 AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: params)
             }
         case AppEvents.Name.searched, AppEvents.Name.addedPaymentInfo, AppEvents.Name.completedRegistration, AppEvents.Name.achievedLevel, AppEvents.Name.completedTutorial, AppEvents.Name.unlockedAchievement, AppEvents.Name.subscribe, AppEvents.Name.startTrial, AppEvents.Name.adClick, AppEvents.Name.adImpression, AppEvents.Name.rated:
-            handleStandard(properties: message.properties, params: &params, eventName: eventName)
+            handleStandard(message.properties, params: &params, eventName: eventName)
             AppEvents.shared.logEvent(eventName, parameters: params)
             // Custom events
         default:
@@ -103,7 +103,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         let index = message.name.index(message.name.startIndex, offsetBy: min(26, message.name.count))
         let truncatedEvent = String(message.name[..<index])
         var params = [AppEvents.ParameterName: Any]()
-        handleCustom(properties: message.properties, params: &params)
+        handleCustom(message.properties, params: &params)
         AppEvents.shared.logEvent(AppEvents.Name(rawValue: "Viewed \(truncatedEvent) Screen"), parameters: params)
         return message
     }
@@ -111,12 +111,6 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
     func reset() {
         AppEvents.shared.clearUserData()
         AppEvents.shared.userID = nil
-    }
-}
-
-extension RSFacebookAppEventsDestination: RSiOSLifecycle {
-    func applicationDidBecomeActive(application: UIApplication?) {
-        ApplicationDelegate.shared.initializeSDK()
     }
 }
 
