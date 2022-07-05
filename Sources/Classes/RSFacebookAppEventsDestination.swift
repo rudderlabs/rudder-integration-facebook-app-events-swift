@@ -71,6 +71,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         handleCustom(message.properties, params: &params)
         let eventName = getFacebookEvent(from: truncatedEvent)
         switch eventName {
+            // Standard events, refer Facebook docs: https://developers.facebook.com/docs/app-events/reference#standard-events-2 for more info
         case AppEvents.Name.addedToCart, AppEvents.Name.addedToWishlist, AppEvents.Name.viewedContent:
             handleStandard(message.properties, params: &params, eventName: eventName)
             if let properties = message.properties, let price = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.price)  {
