@@ -150,7 +150,7 @@ extension RSFacebookAppEventsDestination {
         }
     }
     
-    func handleStandard(properties properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any], eventName: AppEvents.Name){
+    func handleStandard(_ properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any], eventName: AppEvents.Name){
         guard let properties = properties else {
             return
         }
