@@ -15,10 +15,10 @@ class ViewController: UIViewController, UIApplicationDelegate {
     let properties: [String: Any] = [
         RSKeys.Ecommerce.productId: "a123",
         RSKeys.Ecommerce.rating: 123,
-        "name": "adName",   // RSKeys.Ecommerce.promotionName
+        RSKeys.Ecommerce.promotionName: "adName",
         RSKeys.Ecommerce.currency: "INR",
         RSKeys.Ecommerce.orderId: "12o3of",
-        "description": "description",   // RSKeys.Other.description
+        RSKeys.Other.description: "description",
         RSKeys.Ecommerce.query: "query",
         
         RSKeys.Ecommerce.value: 120.87,
@@ -43,8 +43,8 @@ class ViewController: UIViewController, UIApplicationDelegate {
             RSKeys.Identify.Traits.birthday: "01/01/2001",
             RSKeys.Identify.Traits.gender: "M",
             RSKeys.Identify.Traits.Address.city: "City",
-            "state": "State",
-            "postalcode": "postalCode",
+            RSKeys.Identify.Traits.Address.state: "State",
+            RSKeys.Identify.Traits.Address.postalCode: "postalCode",
             RSKeys.Identify.Traits.Address.country: "Country"
         ])
     }
@@ -54,9 +54,7 @@ class ViewController: UIViewController, UIApplicationDelegate {
             RSEvents.Ecommerce.productAdded, RSEvents.Ecommerce.productAddedToWishList, RSEvents.Ecommerce.productViewed,
             RSEvents.Ecommerce.checkoutStarted, RSEvents.Ecommerce.spendCredits,
             RSEvents.Ecommerce.orderCompleted,
-            RSEvents.Ecommerce.productsSearched, RSEvents.Ecommerce.paymentInfoEntered, RSEvents.LifeCycle.completeRegistration, RSEvents.LifeCycle.achieveLevel, RSEvents.LifeCycle.completeTutorial, RSEvents.LifeCycle.unlockAchievement,
-//            RSEvents.LifeCycle.subscribe, RSEvents.LifeCycle.startTrial,
-            RSEvents.Ecommerce.promotionClicked, RSEvents.Ecommerce.promotionViewed, RSEvents.Ecommerce.productReviewed
+            RSEvents.Ecommerce.productsSearched, RSEvents.Ecommerce.paymentInfoEntered,RSEvents.LifeCycle.completeRegistration, RSEvents.LifeCycle.achieveLevel, RSEvents.LifeCycle.completeTutorial, RSEvents.LifeCycle.unlockAchievement, RSEvents.LifeCycle.subscribe, RSEvents.LifeCycle.startTrial, RSEvents.Ecommerce.promotionClicked, RSEvents.Ecommerce.promotionViewed, RSEvents.Ecommerce.productReviewed
         ]
         
         for event in eventList {
