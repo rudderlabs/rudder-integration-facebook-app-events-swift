@@ -7,8 +7,6 @@
 //
 
 import UIKit
-import AdSupport
-import AppTrackingTransparency
 import FBSDKCoreKit
 import Rudder
 
