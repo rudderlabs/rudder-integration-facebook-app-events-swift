@@ -74,17 +74,17 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
             // Standard events, refer Facebook docs: https://developers.facebook.com/docs/app-events/reference#standard-events-2 for more info
         case AppEvents.Name.addedToCart, AppEvents.Name.addedToWishlist, AppEvents.Name.viewedContent:
             handleStandard(message.properties, params: &params, eventName: eventName)
-            if let properties = message.properties, let price = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.price)  {
+            if let properties = message.properties, let price = getValueToSum(from: properties, properteyKey: RSKeys.Ecommerce.price)  {
                 AppEvents.shared.logEvent(eventName, valueToSum: price, parameters: params)
             }
         case AppEvents.Name.initiatedCheckout, AppEvents.Name.spentCredits:
             handleStandard(message.properties, params: &params, eventName: eventName)
-            if let properties = message.properties, let value = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.value) {
+            if let properties = message.properties, let value = getValueToSum(from: properties, properteyKey: RSKeys.Ecommerce.value) {
                 AppEvents.shared.logEvent(eventName, valueToSum: value, parameters: params)
             }
         case AppEvents.Name.purchased:
             handleStandard(message.properties, params: &params, eventName: eventName)
-            if let properties = message.properties, let revenue = RSFacebookAppEventsDestination.extractValutToSum(from: properties, valueToSumKey: RSKeys.Ecommerce.revenue), let currency = properties[RSKeys.Ecommerce.currency] as? String {
+            if let properties = message.properties, let revenue = getValueToSum(from: properties, properteyKey: RSKeys.Ecommerce.revenue), let currency = properties[RSKeys.Ecommerce.currency] as? String {
                 AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: params)
             }
         case AppEvents.Name.searched, AppEvents.Name.addedPaymentInfo, AppEvents.Name.completedRegistration, AppEvents.Name.achievedLevel, AppEvents.Name.completedTutorial, AppEvents.Name.unlockedAchievement, AppEvents.Name.subscribe, AppEvents.Name.startTrial, AppEvents.Name.adClick, AppEvents.Name.adImpression, AppEvents.Name.rated:
@@ -189,13 +189,11 @@ extension RSFacebookAppEventsDestination {
         }
     }
     
-    static func extractValutToSum(from properties: [String: Any]?, valueToSumKey: String) -> Double? {
+    func getValueToSum(from properties: [String: Any]?, properteyKey: String) -> Double? {
         if let properties = properties {
-            for key in properties.keys {
-                if key.caseInsensitiveCompare(valueToSumKey) == .orderedSame {
-                    if let valueToSum = properties[key] {
-                        return Double("\(valueToSum)")
-                    }
+            for (key, value) in properties {
+                if key.caseInsensitiveCompare(properteyKey) == .orderedSame {
+                        return Double("\(value)")
                     break
                 }
             }
