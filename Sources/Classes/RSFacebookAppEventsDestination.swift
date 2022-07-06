@@ -58,13 +58,14 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
             gender: message.traits?[RSKeys.Identify.Traits.gender] as? String,
             city: message.traits?[RSKeys.Identify.Traits.Address.city] as? String,
             state: message.traits?[RSKeys.Identify.Traits.Address.state] as? String,
-            zip: message.traits?[RSKeys.Identify.Traits.Address.postalcode] as? String,
+            zip: message.traits?[RSKeys.Identify.Traits.Address.postalCode] as? String,
             country: message.traits?[RSKeys.Identify.Traits.Address.country] as? String
         )
         return message
     }
     
     func track(message: TrackMessage) -> TrackMessage? {
+        // FB Event Names must be <= 40 characters
         let index = message.event.index(message.event.startIndex, offsetBy: min(40, message.event.count))
         let truncatedEvent = String(message.event[..<index])
         var params = [AppEvents.ParameterName: Any]()
