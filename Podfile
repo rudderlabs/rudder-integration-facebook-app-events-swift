@@ -11,7 +11,7 @@ end
 target 'RudderFacebookAppEvents' do
     project 'RudderFacebookAppEvents.xcodeproj'
     shared_pods
-    pod 'FBSDKCoreKit', '13.0.0'
+    pod 'FBSDKCoreKit', '14.0.0'
 end
 
 target 'SampleAppObjC' do
