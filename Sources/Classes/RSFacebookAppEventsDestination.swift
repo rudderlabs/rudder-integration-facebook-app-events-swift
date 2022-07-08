@@ -69,7 +69,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         let index = message.event.index(message.event.startIndex, offsetBy: min(40, message.event.count))
         let truncatedEvent = String(message.event[..<index])
         var params = [AppEvents.ParameterName: Any]()
-        handleCustom(message.properties, params: &params)
+        handleCustom(message.properties, params: &params, isScreenEvent: false)
         let eventName = getFacebookEvent(from: truncatedEvent)
         switch eventName {
             // Standard events, refer Facebook docs: https://developers.facebook.com/docs/app-events/reference#standard-events-2 for more info
@@ -105,7 +105,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         let index = message.name.index(message.name.startIndex, offsetBy: min(26, message.name.count))
         let truncatedEvent = String(message.name[..<index])
         var params = [AppEvents.ParameterName: Any]()
-        handleCustom(message.properties, params: &params)
+        handleCustom(message.properties, params: &params, isScreenEvent: true)
         AppEvents.shared.logEvent(AppEvents.Name(rawValue: "Viewed \(truncatedEvent) Screen"), parameters: params)
         return message
     }
@@ -177,13 +177,13 @@ extension RSFacebookAppEventsDestination {
         }
     }
     
-    func handleCustom(_ properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any]){
+    func handleCustom(_ properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any], isScreenEvent: Bool){
         guard let properties = properties else {
             return
         }
         
         for (key, value) in properties {
-            if TRACK_RESERVED_KEYWORDS.contains(key) {
+            if !isScreenEvent && TRACK_RESERVED_KEYWORDS.contains(key) {
                 continue
             }
             params[AppEvents.ParameterName(rawValue: key)] = "\(value)"
