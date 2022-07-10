@@ -1,33 +1,97 @@
-# What is RudderStack?
+<p align="center">
+  <a href="https://rudderstack.com/">
+    <img src="https://user-images.githubusercontent.com/59817155/121357083-1c571300-c94f-11eb-8cc7-ce6df13855c9.png">
+  </a>
+</p>
 
-[RudderStack](https://rudderstack.com/) is a **customer data pipeline** tool for collecting, routing and processing data from your websites, apps, cloud tools, and data warehouse.
+<p align="center"><b>The Customer Data Platform for Developers</b></p>
 
-More information on RudderStack can be found [here](https://github.com/rudderlabs/rudder-server).
+<p align="center">
+  <a href="https://cocoapods.org/pods/RudderFacebookAppEvents">
+    <img src="https://img.shields.io/cocoapods/v/RudderFacebookAppEvents.svg?style=flat">
+    </a>
+</p>
 
-## Integrating Facebook with RudderStack's iOS SDK
+<p align="center">
+  <b>
+    <a href="https://rudderstack.com">Website</a>
+    ·
+    <a href="https://www.rudderstack.com/docs/stream-sources/rudderstack-sdk-integration-guides/rudderstack-ios-sdk/ios-v2/">Documentation</a>
+    ·
+    <a href="https://rudderstack.com/join-rudderstack-slack-community">Community Slack</a>
+  </b>
+</p>
 
-1. Add [Facebook](http://Facebook.google.com) as a destination in the [Dashboard](https://app.rudderstack.com/).
+---
+# Integrating RudderStack iOS SDK with Facebook App Events
 
-2. Rudder-Facebook is available through [CocoaPods](https://cocoapods.org). To install it, add the following line to your Podfile and followed by `pod install`:
+This repository contains the resources and assets required to integrate the [RudderStack iOS SDK](https://www.rudderstack.com/docs/stream-sources/rudderstack-sdk-integration-guides/rudderstack-ios-sdk/ios-v2/) with [Facebook App Events](https://developers.facebook.com/docs/app-events/overview).
+
+For more information on configuring Facebook App Events as a destination in RudderStack and the supported events and their mappings, refer to the [Facebook App Events documentation](https://www.rudderstack.com/docs/destinations/advertising/facebook-app-events/).
+
+| Important: This device mode integration is supported for Facebook App Events v13.0.0 and above. |
+| :---|
+
+## Step 1: Integrate the SDK with Facebook App Events
+
+1. Add [Facebook App Events](https://developers.facebook.com/docs/app-events/overview) as a destination in the [RudderStack dashboard](https://app.rudderstack.com/).
+2. `RudderFacebookAppEvents` is available through [CocoaPods](https://cocoapods.org). To install it, add the following line to your `Podfile`:
 
 ```ruby
-pod 'RudderFacebookAppEvents'
+pod 'RudderFacebookAppEvents', '~> 1.0.0'
 ```
 
-## Initialize ```RSClient```
+3. Run the `pod install` command.
 
-Put the following code in your ```AppDelegate.m``` file under the method ```didFinishLaunchingWithOptions```:
+## Step 2: Import the SDK
 
+### Swift
+
+```swift
+import RudderFacebookAppEvents
 ```
+
+### Objective C
+
+```objective-c
+@import RudderFacebookAppEvents;
+```
+
+## Step 3: Initialize the RudderStack client (`RSClient`)
+
+Place the following in your `AppDelegate` under the `didFinishLaunchingWithOptions` method.
+
+### Swift
+
+```swift
+let config: RSConfig = RSConfig(writeKey: WRITE_KEY)
+            .dataPlaneURL(DATA_PLANE_URL)       
+             
+RSClient.sharedInstance().configure(with: config)
+RSClient.sharedInstance().addDestination(RudderFacebookAppEventsDestination())
+```
+
+### Objective C
+
+```objective-c
 RSConfig *config = [[RSConfig alloc] initWithWriteKey:WRITE_KEY];
-[config dataPlaneURL:DATA_PLANE_URL];    
-RSClient *client = [[RSClient alloc] initWithConfig:config];
-[client addWithDestination:[[RudderFacebookAppEventsDestination alloc] init]];
+[config dataPlaneURL:DATA_PLANE_URL];
+
+[[RSClient sharedInstance] configureWith:config];
+[[RSClient sharedInstance] addDestination:[[RudderFacebookAppEventsDestination alloc] init]];
 ```
 
-## Send Events
-Follow the steps from the [RudderStack iOS SDK](https://github.com/rudderlabs/rudder-sdk-cocoa).
+## Step 4: Send events
 
-## Contact Us
+Follow the steps listed in the [RudderStack iOS SDK](https://github.com/rudderlabs/rudder-sdk-ios/tree/master-v2#sending-events) repo to start sending events to Facebook App Events.
 
-If you come across any issues while configuring or using this integration, please feel free to [start a conversation on our [Slack](https://resources.rudderstack.com/join-rudderstack-slack) channel. We will be happy to help you.
+## About RudderStack
+
+RudderStack is the **customer data platform** for developers. With RudderStack, you can build and deploy efficient pipelines that collect customer data from every app, website, and SaaS platform, then activate your data in your warehouse, business, and marketing tools.
+
+| Start building a better, warehouse-first CDP that delivers complete, unified data to every part of your customer data stack. Sign up for [RudderStack Cloud](https://app.rudderstack.com/signup?type=freetrial) today. |
+| :---|
+
+## Contact us
+
+For queries on configuring or using this integration, start a conversation in our [Slack](https://rudderstack.com/join-rudderstack-slack-community) community.

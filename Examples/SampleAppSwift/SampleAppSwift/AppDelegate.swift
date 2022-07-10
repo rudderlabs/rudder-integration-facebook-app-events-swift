@@ -7,8 +7,12 @@
 //
 
 import UIKit
-import RudderStack
+import Rudder
 import RudderFacebookAppEvents
+import FBSDKCoreKit
+
+import AdSupport
+import AppTrackingTransparency
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,19 +22,50 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        // Request user for Tracking Authorization
+        NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(applicationDidBecomeActive(_:)),
+                name: UIApplication.didBecomeActiveNotification,
+                object: nil)
+        
+        ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+        
         let config: RSConfig = RSConfig(writeKey: "1wvsoF3Kx2SczQNlx1dvcqW9ODW")
             .dataPlaneURL("https://rudderstacz.dataplane.rudderstack.com")
-            .loglevel(.debug)
-            .trackLifecycleEvents(true)
-            .recordScreenViews(true)
+            .loglevel(.none)
+            .trackLifecycleEvents(false)
+            .recordScreenViews(false)
         
-        client = RSClient(config: config)
-
-        client?.addDestination(RudderFacebookAppEventsDestination())
-        client?.track("Track 1")
+        RSClient.sharedInstance().configure(with: config)
+        RSClient.sharedInstance().addDestination(RudderFacebookAppEventsDestination())
         
+        // Enable FB log manually
+//        Settings.shared.enableLoggingBehavior(.appEvents)
         return true
     }
+    
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        if #available(iOS 14, *) {
+            ATTrackingManager.requestTrackingAuthorization { status in
+                switch status {
+                case .authorized:
+                    /// `Get Device Consent`: Starting with iOS 14.5, you will need to set `isAdvertiserTrackingEnabled` and log each time you give a device permission to share data with Facebook. Refer Facebook App Event doc here: https://developers.facebook.com/docs/app-events/getting-started-app-events-ios
+                    Settings.shared.isAdvertiserTrackingEnabled = true
+                    print("Authorized")
+                case .denied:
+                    print("Denied")
+                case .notDetermined:
+                    print("Not Determined")
+                case .restricted:
+                    print("Restricted")
+                @unknown default:
+                    print("Unknown")
+                }
+            }
+        }
+    }
+
 
     // MARK: UISceneSession Lifecycle
 

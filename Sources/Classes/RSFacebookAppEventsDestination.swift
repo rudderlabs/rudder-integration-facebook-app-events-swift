@@ -8,7 +8,7 @@
 #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
 
 import Foundation
-import RudderStack
+import Rudder
 import FBSDKCoreKit
 
 class RSFacebookAppEventsDestination: RSDestinationPlugin {
@@ -16,48 +16,85 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
     let key = "Facebook App Events"
     var client: RSClient?
     var controller = RSController()
-        
+    
     func update(serverConfig: RSServerConfig, type: UpdateType) {
         guard type == .initial else { return }
-        if let destinations = serverConfig.destinations {
-            if let destination = destinations.first(where: { $0.destinationDefinition?.displayName == self.key }) {
-                let limitedDataUse = destination.config?.dictionaryValue?["limitedDataUse"] as? Bool
-                var dpoState = destination.config?.dictionaryValue?["dpoState"] as? Int
-                if dpoState != 0, dpoState != 1000 {
-                    dpoState = 0
-                }
-                var dpoCountry = destination.config?.dictionaryValue?["dpoCountry"] as? Int
-                if dpoCountry != 0, dpoCountry != 1 {
-                    dpoCountry = 0
-                }
-                if limitedDataUse == true, let country = dpoCountry, let state = dpoState {
-                    Settings.shared.setDataProcessingOptions(["LDU"], country: Int32(country), state: Int32(state))
-                    client?.log(message: "[FBSDKSettings setDataProcessingOptions:[LDU] country:\(country) state:\(state)]", logLevel: .debug)
-                } else {
-                    Settings.shared.setDataProcessingOptions([])
-                    client?.log(message: "[FBSDKSettings setDataProcessingOptions:[]]", logLevel: .debug)
-                }
-            }
+        guard let facebookAppEventsConfig: RudderFacebookAppEventsConfig = serverConfig.getConfig(forPlugin: self) else {
+            client?.log(message: "Failed to Initialize Facebook App Events Factory", logLevel: .warning)
+            return
         }
+        var dpoState = facebookAppEventsConfig.dpoState
+        if facebookAppEventsConfig.dpoState != 0, facebookAppEventsConfig.dpoState != 1000 {
+            dpoState = 0
+        }
+        var dpoCountry = facebookAppEventsConfig.dpoCountry
+        if dpoCountry != 0, dpoCountry != 1 {
+            dpoCountry = 0
+        }
+        let limitedDataUse = facebookAppEventsConfig.limitedDataUse
+        if limitedDataUse == true {
+            Settings.shared.setDataProcessingOptions(["LDU"], country: Int32(dpoCountry), state: Int32(dpoState))
+            client?.log(message: "[FBSDKSettings setDataProcessingOptions:[LDU] country:\(dpoCountry) state:\(dpoState)]", logLevel: .debug)
+        } else {
+            Settings.shared.setDataProcessingOptions([])
+            client?.log(message: "[FBSDKSettings setDataProcessingOptions:[]]", logLevel: .debug)
+        }
+        if client?.configuration?.logLevel == RSLogLevel.debug || client?.configuration?.logLevel == RSLogLevel.verbose {
+            Settings.shared.enableLoggingBehavior(.appEvents)
+        }
+        client?.log(message: "Initializing Facebook App Events SDK", logLevel: .debug)
     }
     
     func identify(message: IdentifyMessage) -> IdentifyMessage? {
-        AppEvents.shared.userID = message.userId
-        AppEvents.shared.setUser(email: message.traits?["email"] as? String, firstName: message.traits?["firstName"] as? String, lastName: message.traits?["lastName"] as? String, phone: message.traits?["phone"] as? String, dateOfBirth: message.traits?["birthday"] as? String, gender: message.traits?["gender"] as? String, city: message.traits?["city"] as? String, state: message.traits?["state"] as? String, zip: message.traits?["postalcode"] as? String, country: message.traits?["country"] as? String)
+        if let userId = message.userId {
+            AppEvents.shared.userID = message.userId
+        }
+        AppEvents.shared.setUser(
+            email: message.traits?[RSKeys.Identify.Traits.email] as? String,
+            firstName: message.traits?[RSKeys.Identify.Traits.firstName] as? String,
+            lastName: message.traits?[RSKeys.Identify.Traits.lastName] as? String,
+            phone: message.traits?[RSKeys.Identify.Traits.phone] as? String,
+            dateOfBirth: message.traits?[RSKeys.Identify.Traits.birthday] as? String,
+            gender: message.traits?[RSKeys.Identify.Traits.gender] as? String,
+            city: message.traits?[RSKeys.Identify.Traits.Address.city] as? String,
+            state: message.traits?[RSKeys.Identify.Traits.Address.state] as? String,
+            zip: message.traits?[RSKeys.Identify.Traits.Address.postalCode] as? String,
+            country: message.traits?[RSKeys.Identify.Traits.Address.country] as? String
+        )
         return message
     }
     
     func track(message: TrackMessage) -> TrackMessage? {
+        // FB Event Names must be <= 40 characters
         let index = message.event.index(message.event.startIndex, offsetBy: min(40, message.event.count))
         let truncatedEvent = String(message.event[..<index])
-        if let revenue = RSFacebookAppEventsDestination.extractRevenue(from: message.properties, revenueKey: "revenue") {
-            let currency = RSFacebookAppEventsDestination.extractCurrency(from: message.properties, withKey: "currency")
-            var properties = message.properties
-            properties?["currency"] = currency
-            AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: RSFacebookAppEventsDestination.extractParams(properties: properties))
-            AppEvents.shared.logEvent(AppEvents.Name(truncatedEvent), valueToSum: revenue, parameters: RSFacebookAppEventsDestination.extractParams(properties: properties))
-        } else {
-            AppEvents.shared.logEvent(AppEvents.Name(truncatedEvent), parameters: RSFacebookAppEventsDestination.extractParams(properties: message.properties))
+        var params = [AppEvents.ParameterName: Any]()
+        handleCustom(message.properties, params: &params, isScreenEvent: false)
+        let eventName = getFacebookEvent(from: truncatedEvent)
+        switch eventName {
+            // Standard events, refer Facebook docs: https://developers.facebook.com/docs/app-events/reference#standard-events-2 for more info
+        case AppEvents.Name.addedToCart, AppEvents.Name.addedToWishlist, AppEvents.Name.viewedContent:
+            handleStandard(message.properties, params: &params, eventName: eventName)
+            if let properties = message.properties, let price = getValueToSum(from: properties, properteyKey: RSKeys.Ecommerce.price)  {
+                AppEvents.shared.logEvent(eventName, valueToSum: price, parameters: params)
+            }
+        case AppEvents.Name.initiatedCheckout, AppEvents.Name.spentCredits:
+            handleStandard(message.properties, params: &params, eventName: eventName)
+            if let properties = message.properties, let value = getValueToSum(from: properties, properteyKey: RSKeys.Ecommerce.value) {
+                AppEvents.shared.logEvent(eventName, valueToSum: value, parameters: params)
+            }
+        case AppEvents.Name.purchased:
+            handleStandard(message.properties, params: &params, eventName: eventName)
+            if let properties = message.properties, let revenue = getValueToSum(from: properties, properteyKey: RSKeys.Ecommerce.revenue), let currency = properties[RSKeys.Ecommerce.currency] as? String {
+                AppEvents.shared.logPurchase(amount: revenue, currency: currency, parameters: params)
+            }
+        case AppEvents.Name.searched, AppEvents.Name.addedPaymentInfo, AppEvents.Name.completedRegistration, AppEvents.Name.achievedLevel, AppEvents.Name.completedTutorial, AppEvents.Name.unlockedAchievement, AppEvents.Name.subscribe, AppEvents.Name.startTrial, AppEvents.Name.adClick, AppEvents.Name.adImpression, AppEvents.Name.rated:
+            handleStandard(message.properties, params: &params, eventName: eventName)
+            AppEvents.shared.logEvent(eventName, parameters: params)
+            // Custom events
+        default:
+            AppEvents.shared.logEvent(eventName, parameters: params)
+            break
         }
         return message
     }
@@ -67,17 +104,9 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
         // 'Viewed' and 'Screen' with spaces take up 14
         let index = message.name.index(message.name.startIndex, offsetBy: min(26, message.name.count))
         let truncatedEvent = String(message.name[..<index])
-        AppEvents.shared.logEvent(AppEvents.Name(rawValue: "Viewed \(truncatedEvent) Screen"), parameters: RSFacebookAppEventsDestination.extractParams(properties: message.properties))
-        return message
-    }
-    
-    func group(message: GroupMessage) -> GroupMessage? {
-        client?.log(message: "MessageType is not supported", logLevel: .warning)
-        return message
-    }
-    
-    func alias(message: AliasMessage) -> AliasMessage? {
-        client?.log(message: "MessageType is not supported", logLevel: .warning)
+        var params = [AppEvents.ParameterName: Any]()
+        handleCustom(message.properties, params: &params, isScreenEvent: true)
+        AppEvents.shared.logEvent(AppEvents.Name(rawValue: "Viewed \(truncatedEvent) Screen"), parameters: params)
         return message
     }
     
@@ -87,77 +116,113 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
     }
 }
 
-extension RSFacebookAppEventsDestination: RSiOSLifecycle {
-    func applicationDidBecomeActive(application: UIApplication?) {
-        ApplicationDelegate.shared.initializeSDK()
-    }
-}
-
 // MARK: - Support methods
 
 extension RSFacebookAppEventsDestination {
-    static func extractRevenue(from properties: [String: Any]?, revenueKey: String) -> Double? {
+    var TRACK_RESERVED_KEYWORDS: [String] {
+        return [RSKeys.Ecommerce.productId, RSKeys.Ecommerce.rating, RSKeys.Ecommerce.promotionName, RSKeys.Ecommerce.orderId, RSKeys.Ecommerce.currency, RSKeys.Other.description, RSKeys.Ecommerce.query, RSKeys.Ecommerce.value, RSKeys.Ecommerce.price, RSKeys.Ecommerce.revenue]
+    }
+    
+    func getFacebookEvent(from event: String) -> AppEvents.Name {
+        switch event {
+        case RSEvents.Ecommerce.productsSearched: return AppEvents.Name.searched
+        case RSEvents.Ecommerce.productViewed: return AppEvents.Name.viewedContent
+        case RSEvents.Ecommerce.productAdded: return AppEvents.Name.addedToCart
+        case RSEvents.Ecommerce.productAddedToWishList: return AppEvents.Name.addedToWishlist
+        case RSEvents.Ecommerce.paymentInfoEntered: return AppEvents.Name.addedPaymentInfo
+        case RSEvents.Ecommerce.checkoutStarted: return AppEvents.Name.initiatedCheckout
+        case RSEvents.Ecommerce.orderCompleted: return AppEvents.Name.purchased
+        case RSEvents.LifeCycle.completeRegistration: return AppEvents.Name.completedRegistration
+        case RSEvents.LifeCycle.achieveLevel: return AppEvents.Name.achievedLevel
+        case RSEvents.LifeCycle.completeTutorial: return AppEvents.Name.completedTutorial
+        case RSEvents.LifeCycle.unlockAchievement: return AppEvents.Name.unlockedAchievement
+        case RSEvents.LifeCycle.subscribe: return AppEvents.Name.subscribe
+        case RSEvents.LifeCycle.startTrial: return AppEvents.Name.startTrial
+        case RSEvents.Ecommerce.promotionClicked: return AppEvents.Name.adClick
+        case RSEvents.Ecommerce.promotionViewed: return AppEvents.Name.adImpression
+        case RSEvents.Ecommerce.spendCredits: return AppEvents.Name.spentCredits
+        case RSEvents.Ecommerce.productReviewed: return AppEvents.Name.rated
+        default: return AppEvents.Name(rawValue: event)
+        }
+    }
+    
+    func handleStandard(_ properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any], eventName: AppEvents.Name){
+        guard let properties = properties else {
+            return
+        }
+        
+        if let productId = properties[RSKeys.Ecommerce.productId] {
+            params[AppEvents.ParameterName.contentID] = "\(productId)"
+        }
+        if let rating = properties[RSKeys.Ecommerce.rating] as? Int {
+            params[AppEvents.ParameterName.maxRatingValue] = rating
+        }
+        if let name = properties[RSKeys.Ecommerce.promotionName] {
+            params[AppEvents.ParameterName.adType] = "\(name)"
+        }
+        if let orderId = properties[RSKeys.Ecommerce.orderId] {
+            params[AppEvents.ParameterName.orderID] = "\(orderId)"
+        }
+        /// For `Purchase` event we're directly handling the `currency` properties
+        if eventName != AppEvents.Name.purchased {
+            if let currency = properties[RSKeys.Ecommerce.currency] {
+                params[AppEvents.ParameterName.currency] = "\(currency)"
+            }
+        }
+        if let description = properties[RSKeys.Other.description] {
+            params[AppEvents.ParameterName.description] = "\(description)"
+        }
+        if let query = properties[RSKeys.Ecommerce.query] {
+            params[AppEvents.ParameterName.searchString] = "\(query)"
+        }
+    }
+    
+    func handleCustom(_ properties: [String: Any]?, params: inout [AppEvents.ParameterName: Any], isScreenEvent: Bool){
+        guard let properties = properties else {
+            return
+        }
+        
+        for (key, value) in properties {
+            if !isScreenEvent && TRACK_RESERVED_KEYWORDS.contains(key) {
+                continue
+            }
+            params[AppEvents.ParameterName(rawValue: key)] = "\(value)"
+        }
+    }
+    
+    func getValueToSum(from properties: [String: Any]?, properteyKey: String) -> Double? {
         if let properties = properties {
-            for key in properties.keys {
-                if key.caseInsensitiveCompare(revenueKey) == .orderedSame {
-                    if let revenue = properties[key] {
-                        return Double("\(revenue)")
-                    }
+            for (key, value) in properties {
+                if key.caseInsensitiveCompare(properteyKey) == .orderedSame {
+                        return Double("\(value)")
                     break
                 }
             }
         }
         return nil
     }
-    
-    static func extractCurrency(from properties: [String: Any]?, withKey currencyKey: String) -> String {
-        if let properties = properties {
-            for key in properties.keys {
-                if key.caseInsensitiveCompare(currencyKey) == .orderedSame {
-                    if let currency = properties[key] {
-                        return "\(currency)"
-                    }
-                    break
-                }
-            }
-        }
-        // default to USD
-        return "USD"
+}
+
+struct RudderFacebookAppEventsConfig: Codable {
+    private let _dpoState: String?
+    var dpoState: Int {
+        return (_dpoState as? Int) ?? 0
     }
     
-    static func extractParams(properties: [String: Any]?) -> [AppEvents.ParameterName: Any]? {
-        var params: [AppEvents.ParameterName: Any]?
-        if let properties = properties {
-            params = [AppEvents.ParameterName: Any]()
-            for (key, value) in properties {
-                switch value {
-                case let v as NSString:
-                    params?[getFacebookAppEvent(from: key)] = v
-                case let v as NSNumber:
-                    params?[getFacebookAppEvent(from: key)] = v
-                case let v as Bool:
-                    params?[getFacebookAppEvent(from: key)] = v
-                default:
-                    break
-                }
-            }
-        }
-        return params
+    private let _dpoCountry: String?
+    var dpoCountry: Int {
+        return (_dpoCountry as? Int) ?? 0
     }
     
-    static func getFacebookAppEvent(from rudderEvent: String) -> AppEvents.ParameterName {
-        switch rudderEvent {
-        case RSECommerceConstants.KeyCurrency: return AppEvents.ParameterName.currency
-        case RSECommerceConstants.KeyOrderId: return AppEvents.ParameterName.orderID
-        case RSECommerceConstants.KeyQuery: return AppEvents.ParameterName.searchString
-        case RSECommerceConstants.KeyWishlistId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyListId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyCheckoutId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyCouponId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyCartId: return AppEvents.ParameterName.contentID
-        case RSECommerceConstants.KeyReviewId: return AppEvents.ParameterName.contentID
-        default: return AppEvents.ParameterName(rudderEvent)
-        }
+    private let _limitedDataUse: Bool?
+    var limitedDataUse: Bool {
+        return _limitedDataUse ?? false
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case _dpoState = "dpoState"
+        case _dpoCountry = "dpoCountry"
+        case _limitedDataUse = "limitedDataUse"
     }
 }
 

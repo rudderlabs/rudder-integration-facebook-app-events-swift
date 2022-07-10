@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
     s.module_name = 'RudderFacebookAppEvents'
     s.swift_version = '5.3'
 
-    s.dependency 'RudderStack'
-    s.dependency 'FBSDKCoreKit', '13.0.0'
+    s.dependency 'Rudder', '~> 2.2.1'
+    s.dependency 'FBSDKCoreKit', '14.0.0'
 end
