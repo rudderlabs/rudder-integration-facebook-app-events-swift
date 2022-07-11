@@ -47,7 +47,7 @@ class RSFacebookAppEventsDestination: RSDestinationPlugin {
     
     func identify(message: IdentifyMessage) -> IdentifyMessage? {
         if let userId = message.userId {
-            AppEvents.shared.userID = message.userId
+            AppEvents.shared.userID = userId
         }
         AppEvents.shared.setUser(
             email: message.traits?[RSKeys.Identify.Traits.email] as? String,
@@ -194,8 +194,7 @@ extension RSFacebookAppEventsDestination {
         if let properties = properties {
             for (key, value) in properties {
                 if key.caseInsensitiveCompare(properteyKey) == .orderedSame {
-                        return Double("\(value)")
-                    break
+                    return Double("\(value)")
                 }
             }
         }
@@ -206,12 +205,12 @@ extension RSFacebookAppEventsDestination {
 struct RudderFacebookAppEventsConfig: Codable {
     private let _dpoState: String?
     var dpoState: Int {
-        return (_dpoState as? Int) ?? 0
+        return Int(_dpoState ?? "") ?? 0
     }
     
     private let _dpoCountry: String?
     var dpoCountry: Int {
-        return (_dpoCountry as? Int) ?? 0
+        return Int(_dpoCountry ?? "") ?? 0
     }
     
     private let _limitedDataUse: Bool?
