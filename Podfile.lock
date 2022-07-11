@@ -1,0 +1,38 @@
+PODS:
+  - FBAEMKit (14.0.0):
+    - FBSDKCoreKit_Basics (= 14.0.0)
+  - FBSDKCoreKit (14.0.0):
+    - FBAEMKit (= 14.0.0)
+    - FBSDKCoreKit_Basics (= 14.0.0)
+  - FBSDKCoreKit_Basics (14.0.0)
+  - Rudder (2.2.1)
+  - RudderFacebookAppEvents (1.0.0):
+    - FBSDKCoreKit (= 14.0.0)
+    - Rudder (~> 2.2.1)
+
+DEPENDENCIES:
+  - FBSDKCoreKit (= 14.0.0)
+  - Rudder (~> 2.2.0)
+  - RudderFacebookAppEvents (from `.`)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - FBAEMKit
+    - FBSDKCoreKit
+    - FBSDKCoreKit_Basics
+    - Rudder
+
+EXTERNAL SOURCES:
+  RudderFacebookAppEvents:
+    :path: "."
+
+SPEC CHECKSUMS:
+  FBAEMKit: d00064597439e75885c70d9adbcb5f3e9ad84f5d
+  FBSDKCoreKit: e5d3acfffe5063a9d0b967ba2ad1f5afc460cf43
+  FBSDKCoreKit_Basics: 1ff46a12e80f0b66e6c00e1ef32d6a5b5b9008a5
+  Rudder: c923a9200becb99e17d4ec8dd0b168646495e829
+  RudderFacebookAppEvents: 19a08da263ecd34abdfec5430e16cdf79184712d
+
+PODFILE CHECKSUM: 5232c063700007b76935ccb6e5d7ff6a50abc91d
+
+COCOAPODS: 1.11.3
