@@ -23,6 +23,7 @@
 		EDD7FFF1276884EF002C356D /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		EDD7FFF2276884F0002C356D /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		EDD7FFF3276884F0002C356D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		EDFD97BA2A37030E00AC0FE5 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				EDD7FFF1276884EF002C356D /* LICENSE */,
+				EDFD97BA2A37030E00AC0FE5 /* Package.swift */,
 				EDD7FFF2276884F0002C356D /* Podfile */,
 				EDB7216627DA35B0000EE8C4 /* RudderFacebookAppEvents.podspec */,
 				EDD7FFF3276884F0002C356D /* README.md */,
