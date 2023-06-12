@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = 'RudderFacebookAppEvents'
-    s.version          = '1.0.0'
+    s.version          = '1.1.0'
     s.summary          = 'Privacy and Security focused Segment-alternative. Facebook App Events Native SDK integration support.'
 
     s.description      = <<-DESC
@@ -19,6 +19,6 @@ Pod::Spec.new do |s|
     s.module_name = 'RudderFacebookAppEvents'
     s.swift_version = '5.3'
 
-    s.dependency 'Rudder', '~> 2.2.2'
+    s.dependency 'Rudder', '~> 2.0'
     s.dependency 'FBSDKCoreKit', '14.0.0'
 end
