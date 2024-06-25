@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
     DESC
 
     s.homepage         = 'https://github.com/rudderlabs/rudder-integration-facebook-app-events-swift'
-    s.license          = { :type => "Apache", :file => "LICENSE" }
+    s.license          = { :type => "Apache", :file => "LICENSE.md" }
     s.author           = { 'RudderStack' => 'arnab@rudderlabs.com' }
     s.source           = { :git => 'https://github.com/rudderlabs/rudder-integration-facebook-app-events-swift.git', :tag => "v#{s.version}" }
     
@@ -20,5 +20,5 @@ Pod::Spec.new do |s|
     s.swift_version = '5.3'
 
     s.dependency 'Rudder', '~> 2.0'
-    s.dependency 'FBSDKCoreKit', '14.0.0'
+    s.dependency 'FBSDKCoreKit', '17.0.2'
 end

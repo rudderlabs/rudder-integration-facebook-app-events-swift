@@ -6,6 +6,8 @@
 //
 
 #import "AppDelegate.h"
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
+#import <AdSupport/AdSupport.h>
 
 @import Rudder;
 @import FBSDKCoreKit;
@@ -22,12 +24,19 @@
     // Override point for customization after application launch.
     
     [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
-    [[FBSDKSettings sharedSettings] setAdvertiserTrackingEnabled:YES];
-    [[FBSDKSettings sharedSettings] setAdvertiserIDCollectionEnabled:YES];
-    [[FBSDKSettings sharedSettings] setAutoLogAppEventsEnabled:YES];
+   // [[FBSDKSettings sharedSettings] setAdvertiserTrackingEnabled:YES];
+   //added alternative code for this line in applicationDidBecomeActive method
     
-    RSConfig *config = [[RSConfig alloc] initWithWriteKey:@"1wvsoF3Kx2SczQNlx1dvcqW9ODW"];
-    [config dataPlaneURL:@"https://rudderstacz.dataplane.rudderstack.com"];
+    //[[FBSDKSettings sharedSettings] setAdvertiserIDCollectionEnabled:YES];
+    //added alternative code for this line in applicationDidBecomeActive method
+    
+    
+    //[[FBSDKSettings sharedSettings] setAutoLogAppEventsEnabled:YES]; //deprecated
+    FBSDKSettings.sharedSettings.isAutoLogAppEventsEnabled = YES; //updated
+    
+    
+    RSConfig *config = [[RSConfig alloc] initWithWriteKey:@"<WRITE_KEY>"];
+    [config dataPlaneURL:@"<DATA_PLANE_URL>"];
     [config loglevel:RSLogLevelVerbose];
     [config trackLifecycleEvents:YES];
     [config recordScreenViews:YES];
@@ -39,6 +48,43 @@
     return YES;
 }
 
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    // Check if the iOS version is 14 or later
+    if (@available(iOS 14, *)) {
+        // Request tracking authorization if the iOS version is 14 or later
+        [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+            switch (status) {
+                case ATTrackingManagerAuthorizationStatusAuthorized:
+                    NSLog(@"Authorized");
+                    break;
+                case ATTrackingManagerAuthorizationStatusDenied:
+                    NSLog(@"Denied");
+                    break;
+                case ATTrackingManagerAuthorizationStatusNotDetermined:
+                    NSLog(@"Not Determined");
+                    break;
+                case ATTrackingManagerAuthorizationStatusRestricted:
+                    NSLog(@"Restricted");
+                    break;
+                default:
+                    NSLog(@"Unknown");
+                    break;
+            }
+        }];
+    } else {
+        // Handle cases for iOS versions below 14
+        if ([ASIdentifierManager sharedManager].advertisingTrackingEnabled) {
+            // Advertising tracking is enabled
+            
+            FBSDKSettings.sharedSettings.isAdvertiserIDCollectionEnabled = YES;
+            NSLog(@"Advertising tracking is enabled");
+        } else {
+            // Advertising tracking is disabled
+            NSLog(@"Advertising tracking is disabled");
+        }
+        // Additional handling for pre-iOS 14 can go here
+    }
+}
 
 #pragma mark - UISceneSession lifecycle
 
