@@ -4,6 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.2.0] - 26 June,2024
+## Version - [1.2.0] - 2024-06-26
 ### Added
-- Initial release
+- update facebook version
