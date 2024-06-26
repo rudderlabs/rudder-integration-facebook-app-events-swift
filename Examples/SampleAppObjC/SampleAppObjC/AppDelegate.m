@@ -24,15 +24,7 @@
     // Override point for customization after application launch.
     
     [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
-   // [[FBSDKSettings sharedSettings] setAdvertiserTrackingEnabled:YES];
-   //added alternative code for this line in applicationDidBecomeActive method
-    
-    //[[FBSDKSettings sharedSettings] setAdvertiserIDCollectionEnabled:YES];
-    //added alternative code for this line in applicationDidBecomeActive method
-    
-    
-    //[[FBSDKSettings sharedSettings] setAutoLogAppEventsEnabled:YES]; //deprecated
-    FBSDKSettings.sharedSettings.isAutoLogAppEventsEnabled = YES; //updated
+    FBSDKSettings.sharedSettings.isAutoLogAppEventsEnabled = YES; 
     
     
     RSConfig *config = [[RSConfig alloc] initWithWriteKey:@"<WRITE_KEY>"];

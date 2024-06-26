@@ -38,7 +38,7 @@ For more information on configuring Facebook App Events as a destination in Rudd
 2. `RudderFacebookAppEvents` is available through [CocoaPods](https://cocoapods.org). To install it, add the following line to your `Podfile`:
 
 ```ruby
-pod 'RudderFacebookAppEvents', '~> 1.1.0'
+pod 'RudderFacebookAppEvents', '~> 1.2.0'
 ```
 
 3. Run the `pod install` command.

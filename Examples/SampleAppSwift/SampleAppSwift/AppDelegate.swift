@@ -53,10 +53,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 case .authorized:
                     /// `Get Device Consent`: Starting with iOS 14.5, you will need to set `isAdvertiserTrackingEnabled` and log each time you give a device permission to share data with Facebook. Refer Facebook App Event doc here: https://developers.facebook.com/docs/app-events/getting-started-app-events-ios
                     
-                    
-                    //Settings.shared.isAdvertiserTrackingEnabled = true
-                   // Setter for 'isAdvertiserTrackingEnabled' is deprecated: The setAdvertiserTrackingEnabled flag is not used for FBSDK v17+ on iOS 17+ as the FBSDK v17+ now relies on ATTrackingManager.trackingAuthorizationStatus.
-                  
+                
                     print("Authorized")
                 case .denied:
                     print("Denied")
