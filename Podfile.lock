@@ -6,7 +6,7 @@ PODS:
     - FBSDKCoreKit_Basics (= 17.0.2)
   - FBSDKCoreKit_Basics (17.0.2)
   - Rudder (2.4.0)
-  - RudderFacebookAppEvents (1.1.0):
+  - RudderFacebookAppEvents (1.2.0):
     - FBSDKCoreKit (= 17.0.2)
     - Rudder (~> 2.0)
 
@@ -31,7 +31,7 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: a5f384db2e9ee84e98494fed8f983d2bd79accff
   FBSDKCoreKit_Basics: d35c775aaf243a2d731dfae7be3a74b1987285ab
   Rudder: 7595af0282d02a88dd61816415d4b28cba16a195
-  RudderFacebookAppEvents: 0a72222ed21550f453d4a29c1d2758574ed84456
+  RudderFacebookAppEvents: a1cef8877a9e59076feaa8acde76479ced245213
 
 PODFILE CHECKSUM: 2659f6cf77a7d14bb25ee09b6f1e714a366a50c5
 

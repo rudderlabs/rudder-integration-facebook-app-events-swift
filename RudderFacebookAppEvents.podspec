@@ -13,7 +13,6 @@ Pod::Spec.new do |s|
     s.source           = { :git => 'https://github.com/rudderlabs/rudder-integration-facebook-app-events-swift.git', :tag => "v#{s.version}" }
     
     s.ios.deployment_target = '12.0'
-    s.tvos.deployment_target = '11.0'
     
     s.source_files = 'Sources/**/*{h,m,swift}'
     s.module_name = 'RudderFacebookAppEvents'
