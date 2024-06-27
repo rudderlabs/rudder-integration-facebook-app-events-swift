@@ -30,9 +30,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 object: nil)
         
         ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+        Settings.shared.isAutoLogAppEventsEnabled = true; // updated
         
-        let config: RSConfig = RSConfig(writeKey: "1wvsoF3Kx2SczQNlx1dvcqW9ODW")
-            .dataPlaneURL("https://rudderstacz.dataplane.rudderstack.com")
+        let config: RSConfig = RSConfig(writeKey: "<WRITE_KEY>")
+            .dataPlaneURL("<DATA_PLANE_URL>")
             .loglevel(.none)
             .trackLifecycleEvents(false)
             .recordScreenViews(false)
@@ -51,12 +52,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 switch status {
                 case .authorized:
                     /// `Get Device Consent`: Starting with iOS 14.5, you will need to set `isAdvertiserTrackingEnabled` and log each time you give a device permission to share data with Facebook. Refer Facebook App Event doc here: https://developers.facebook.com/docs/app-events/getting-started-app-events-ios
-                    Settings.shared.isAdvertiserTrackingEnabled = true
+                    
+                
                     print("Authorized")
                 case .denied:
                     print("Denied")
                 case .notDetermined:
                     print("Not Determined")
+                    
                 case .restricted:
                     print("Restricted")
                 @unknown default:
@@ -64,6 +67,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             }
         }
+        else{
+            if ASIdentifierManager.shared().isAdvertisingTrackingEnabled {
+                // Advertising tracking is enabled
+                Settings.shared.isAdvertiserIDCollectionEnabled = true
+                print("Advertising tracking is enabled")
+            } else {
+               
+                print("Advertising tracking is disabled")
+            }
+        }
+       
     }
 
 

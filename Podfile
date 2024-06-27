@@ -8,7 +8,7 @@ platform :ios, '12.0'
 target 'RudderFacebookAppEvents' do
     project 'RudderFacebookAppEvents.xcodeproj'
     pod 'Rudder', '~> 2.0'
-    pod 'FBSDKCoreKit', '14.0.0'
+    pod 'FBSDKCoreKit', '17.0.2'
 end
 
 target 'SampleAppObjC' do
