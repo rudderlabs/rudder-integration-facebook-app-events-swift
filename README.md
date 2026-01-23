@@ -25,6 +25,30 @@
 ---
 # Integrating RudderStack iOS SDK with Facebook App Events
 
+> ---
+> ## ⚠️ Deprecation Notice
+>
+> This repository contains an integration built on top of a **deprecated core SDK** and is no longer actively maintained.
+>
+> Please migrate to the newer, actively maintained **Swift SDK**:
+> - **Core SDK:** Swift SDK
+> - **Repository:** https://github.com/rudderlabs/rudder-sdk-swift
+> - **Documentation:** https://www.rudderstack.com/docs/sources/event-streams/sdks/swift-sdk/
+>
+> This repository will not receive new features, bug fixes, or security updates and will be **sunset in the near future**.
+>
+> ### Replacement Integration Available
+>
+> A newer version of this integration is available and is fully compatible with the new core SDK:
+>
+> - **Replacement Integration:** RudderIntegrationFacebook
+> - **Repository:** https://github.com/rudderlabs/integration-swift-facebook/
+> - **Documentation:** https://www.rudderstack.com/docs/destinations/streaming-destinations/facebook-app-events/
+>
+> We strongly recommend migrating to the new core SDK and adopting this replacement integration as soon as possible.
+>
+> ---
+
 This repository contains the resources and assets required to integrate the [RudderStack iOS SDK](https://www.rudderstack.com/docs/stream-sources/rudderstack-sdk-integration-guides/rudderstack-ios-sdk/ios-v2/) with [Facebook App Events](https://developers.facebook.com/docs/app-events/overview).
 
 For more information on configuring Facebook App Events as a destination in RudderStack and the supported events and their mappings, refer to the [Facebook App Events documentation](https://www.rudderstack.com/docs/destinations/advertising/facebook-app-events/).
